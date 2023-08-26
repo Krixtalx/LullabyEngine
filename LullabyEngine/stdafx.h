@@ -22,8 +22,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+//import std;
 
-// IMPORTANTE: El include de GLEW debe estar siempre ANTES de el de GLFW							
+#include "vulkan/vulkan.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"
@@ -37,6 +38,9 @@
 //#include "imgui_impl_glfw.h"
 //#include "imgui_stdlib.h"
 //#include "imgui_internal.h"
+
+//Utilities 
+#include "Utilities/Singleton.h"
 
 // Rename
 typedef glm::vec4 vec4;

@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -134,7 +134,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -153,14 +153,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Dependencies\vkBootstrap\VkBootstrap.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Core\Camera\Camera.cpp" />
+    <ClCompile Include="Core\Camera\CameraProjection.cpp" />
+    <ClCompile Include="Core\VKRenderer.cpp" />
+    <ClCompile Include="Geometry\AABB.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Core\Setup.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Camera\Camera.h" />
+    <ClInclude Include="Core\Camera\CameraProjection.h" />
+    <ClInclude Include="Core\VKRenderer.h" />
+    <ClInclude Include="Geometry\AABB.h" />
+    <ClInclude Include="Core\Setup.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utilities\Singleton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,6 +13,39 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de encabezado\Core">
+      <UniqueIdentifier>{421cb94e-0031-4ad9-aef0-21e564160307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Geometry">
+      <UniqueIdentifier>{becec90d-14c8-4ba6-a117-ea0595661f7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Core\Camera">
+      <UniqueIdentifier>{06a1e978-e4ff-4be1-a692-3eefb218db4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Core">
+      <UniqueIdentifier>{3d3a823b-9698-402c-ac8d-464637301891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Geometry">
+      <UniqueIdentifier>{e4c7cdaf-9d2c-49ab-9225-8d54521053e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Core\Camera">
+      <UniqueIdentifier>{b5886264-5f4a-4c86-a857-1f2273a4c61d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\UI">
+      <UniqueIdentifier>{6e84aff7-c956-4720-8c8c-8e292c931eba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Utilities">
+      <UniqueIdentifier>{08e3713d-0bc3-40dc-8beb-ff41f26d94dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\UI">
+      <UniqueIdentifier>{c061bd83-3bdb-40ac-b0de-2f7e731b7b8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Utilities">
+      <UniqueIdentifier>{f2fb444f-c9e7-43e7-936e-a7231435d803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Dependencies">
+      <UniqueIdentifier>{e9f59cc9-ea1a-4d3b-a3b7-bbeff3738b5b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,10 +54,46 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Camera\Camera.cpp">
+      <Filter>Archivos de origen\Core\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Camera\CameraProjection.cpp">
+      <Filter>Archivos de origen\Core\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry\AABB.cpp">
+      <Filter>Archivos de origen\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Setup.cpp">
+      <Filter>Archivos de origen\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\VKRenderer.cpp">
+      <Filter>Archivos de origen\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\vkBootstrap\VkBootstrap.cpp">
+      <Filter>Archivos de origen\Dependencies</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry\AABB.h">
+      <Filter>Archivos de encabezado\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Camera\Camera.h">
+      <Filter>Archivos de encabezado\Core\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Camera\CameraProjection.h">
+      <Filter>Archivos de encabezado\Core\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\Singleton.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Setup.h">
+      <Filter>Archivos de encabezado\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\VKRenderer.h">
+      <Filter>Archivos de encabezado\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
