@@ -1,8 +1,12 @@
 #include "stdafx.h"
 #include "VKRenderer.h"
+#include "VKInitializers.h"
 
 void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 	if (!_isInitialized) {
+		/*if (volkInitialize() != VK_SUCCESS) {
+			throw std::runtime_error("Problem while initializing Volk");
+		}*/
 		vkb::InstanceBuilder builder;
 
 		//make the Vulkan instance, with basic debug features
@@ -16,6 +20,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 
 		//store the instance
 		_instance = vkbInstance.instance;
+		/*volkLoadInstance(_instance);*/
 		//store the debug messenger
 		_debugMesseger = vkbInstance.debug_messenger;
 
@@ -47,11 +52,14 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 
 		// Get the VkDevice handle used in the rest of a Vulkan application
 		_device = vkbDevice.device;
+		/*volkLoadDevice(_device);*/
 		_chosenGPU = physicalDevice.physical_device;
 
 		// use vkbootstrap to get a Graphics queue
 		_graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 		_graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
+		_computeQueue = vkbDevice.get_queue(vkb::QueueType::compute).value();
+		_computeQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::compute).value();
 
 		_isInitialized = true;
 	} else {
@@ -60,6 +68,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 }
 
 void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
+	_renderResolution = windowSize;
 	vkb::SwapchainBuilder swapchainBuilder{ _chosenGPU,_device,_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -78,9 +87,100 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 	_swapchainImageFormat = vkbSwapchain.image_format;
 }
 
+void Lullaby::VKRenderer::initCommands() {
+	//create a command pool for commands submitted to the graphics queue.
+	//the command pool will be one that can submit graphics commands
+	//we also want the pool to allow for resetting of individual command buffers
+	auto commandPoolInfo = LullabyHelpers::commandPoolCreateInfo(_graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
+	//Create graphics command pool
+	auto result = vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_graphicsCommandPool);
+
+	if (result != VK_SUCCESS) {
+		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating command pool" << std::endl;
+	}
+
+	//allocate the default command buffer that we will use for rendering
+	//commands will be made from our _graphicsCommandPool
+	//we will allocate 1 command buffer
+	// command level is Primary
+	auto commandAllocInfo = LullabyHelpers::commandBufferAllocateInfo(_graphicsCommandPool);
+
+	result = vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer);
+	if (result != VK_SUCCESS) {
+		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating command buffer" << std::endl;
+	}
+}
+
+void Lullaby::VKRenderer::initFramebuffers() {
+	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
+	VkFramebufferCreateInfo fb_info = {};
+	fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	fb_info.pNext = nullptr;
+
+	fb_info.renderPass = _mainRenderPass;
+	fb_info.attachmentCount = 1;
+	fb_info.width = _renderResolution.x;
+	fb_info.height = _renderResolution.y;
+	fb_info.layers = 1;
+
+	//grab how many images we have in the swapchain
+	const uint32_t swapchain_imagecount = _swapchainImages.size();
+	_framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+
+	//create framebuffers for each of the swapchain image views
+	for (int i = 0; i < swapchain_imagecount; i++) {
+		fb_info.pAttachments = &_swapchainImageViews[i];
+		auto result = vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]);
+		if (result != VK_SUCCESS) {
+			std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating a framebuffer" << std::endl;
+		}
+	}
+}
+
+void Lullaby::VKRenderer::initDefaultRenderpass() {
+	// the renderpass will use this color attachment.
+	auto colorAttachment = LullabyHelpers::createAttachmentDescription(
+		_swapchainImageFormat, //the attachment will have the format needed by the swapchain
+		VK_SAMPLE_COUNT_1_BIT, //1 sample, we won't be doing MSAA for now
+		VK_ATTACHMENT_LOAD_OP_CLEAR, // we Clear when this attachment is loaded
+		VK_ATTACHMENT_STORE_OP_STORE, // we keep the attachment stored when the renderpass ends
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, //we don't care about stencil		
+		VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_IMAGE_LAYOUT_UNDEFINED, //we don't know nor care about the starting layout of the attachment
+		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR); //after the renderpass ends, the image has to be on a layout ready for display
+
+	VkAttachmentReference color_attachment_ref = {};
+	//attachment number will index into the pAttachments array in the parent renderpass itself
+	color_attachment_ref.attachment = 0;
+	color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	//we are going to create 1 subpass, which is the minimum you can do
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &color_attachment_ref;
+
+	auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
+	auto result = vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass);
+	if (result != VK_SUCCESS) {
+		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating the main render pass" << std::endl;
+	}
+}
+
 void Lullaby::VKRenderer::releaseResources() {
 	if (_isInitialized) {
 		//You should always destroy the objects in the opposite way they are created
+		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+
+		for (int i = 0; i < _swapchainImages.size(); i++) {
+			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
+		}
+
+		vkDestroyRenderPass(_device, _mainRenderPass, nullptr);
+
+		vkDestroyCommandPool(_device, _graphicsCommandPool, nullptr);
+
 		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
 
 		//destroy swapchain resources

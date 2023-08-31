@@ -17,7 +17,6 @@ Lullaby::Setup::~Setup() {
 
 void Lullaby::Setup::init(const std::string& title, int width, int height, const bool headless) {
 	_isHeadless = headless;
-
 	if (!headless) {
 		// - Inicializa GLFW. Es un proceso que sólo debe realizarse una vez en la aplicación
 		if (glfwInit() != GLFW_TRUE) {
@@ -41,10 +40,11 @@ void Lullaby::Setup::init(const std::string& title, int width, int height, const
 		_resolution = { width, height };
 	}
 	_renderer->initRenderer(_window);
-
 	if (!headless)
 		_renderer->initSwapchain(_resolution);
-
+	_renderer->initCommands();
+	_renderer->initDefaultRenderpass();
+	_renderer->initFramebuffers();
 
 }
 

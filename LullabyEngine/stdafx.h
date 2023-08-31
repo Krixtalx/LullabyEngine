@@ -2,6 +2,8 @@
 #define _USE_MATH_DEFINES
 #define GLM_ENABLE_EXPERIMENTAL
 #define IMGUI_DEFINE_MATH_OPERATORS
+//#define VK_NO_PROTOTYPES
+//#define VOLK_IMPLEMENTATION
 
 #include <any>
 #include <chrono>
@@ -24,7 +26,8 @@
 #include <vector>
 //import std;
 
-#include "vulkan/vulkan.hpp"
+//#include "Volk/volk.h"
+#include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"
@@ -55,16 +58,3 @@ typedef glm::uvec2 uvec2;
 
 typedef glm::ivec3 ivec3;
 typedef glm::ivec2 ivec2;
-
-// Millis time
-
-//#include <windows.h>
-//
-//// Used to measure intervals and absolute times
-//typedef int64_t msec_t;
-//
-//msec_t time_ms(void)
-//{
-//    return timeGetTime();
-//}
-
