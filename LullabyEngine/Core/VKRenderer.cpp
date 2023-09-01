@@ -91,7 +91,7 @@ void Lullaby::VKRenderer::initCommands() {
 	//create a command pool for commands submitted to the graphics queue.
 	//the command pool will be one that can submit graphics commands
 	//we also want the pool to allow for resetting of individual command buffers
-	auto commandPoolInfo = LullabyHelpers::commandPoolCreateInfo(_graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	const auto commandPoolInfo = LullabyHelpers::commandPoolCreateInfo(_graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 	//Create graphics command pool
 	auto result = vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_graphicsCommandPool);
@@ -104,7 +104,7 @@ void Lullaby::VKRenderer::initCommands() {
 	//commands will be made from our _graphicsCommandPool
 	//we will allocate 1 command buffer
 	// command level is Primary
-	auto commandAllocInfo = LullabyHelpers::commandBufferAllocateInfo(_graphicsCommandPool);
+	const auto commandAllocInfo = LullabyHelpers::commandBufferAllocateInfo(_graphicsCommandPool);
 
 	result = vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer);
 	if (result != VK_SUCCESS) {
@@ -131,8 +131,7 @@ void Lullaby::VKRenderer::initFramebuffers() {
 	//create framebuffers for each of the swapchain image views
 	for (int i = 0; i < swapchain_imagecount; i++) {
 		fb_info.pAttachments = &_swapchainImageViews[i];
-		auto result = vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]);
-		if (result != VK_SUCCESS) {
+		if (vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]) != VK_SUCCESS) {
 			std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating a framebuffer" << std::endl;
 		}
 	}
@@ -140,7 +139,7 @@ void Lullaby::VKRenderer::initFramebuffers() {
 
 void Lullaby::VKRenderer::initDefaultRenderpass() {
 	// the renderpass will use this color attachment.
-	auto colorAttachment = LullabyHelpers::createAttachmentDescription(
+	const auto colorAttachment = LullabyHelpers::createAttachmentDescription(
 		_swapchainImageFormat, //the attachment will have the format needed by the swapchain
 		VK_SAMPLE_COUNT_1_BIT, //1 sample, we won't be doing MSAA for now
 		VK_ATTACHMENT_LOAD_OP_CLEAR, // we Clear when this attachment is loaded
@@ -161,14 +160,38 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &color_attachment_ref;
 
-	auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
-	auto result = vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass);
-	if (result != VK_SUCCESS) {
+	const auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
+	if (vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass) != VK_SUCCESS) {
 		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating the main render pass" << std::endl;
 	}
 }
 
-void Lullaby::VKRenderer::releaseResources() {
+void Lullaby::VKRenderer::initSyncStructures() {
+	//create synchronization structures
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.pNext = nullptr;
+
+	//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	if (vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence) != VK_SUCCESS) {
+		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating the main render pass" << std::endl;
+
+	}
+
+	//for the semaphores we don't need any flags
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+	semaphoreCreateInfo.flags = 0;
+
+	VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore));
+	VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore));
+}
+
+void Lullaby::VKRenderer::releaseResources() const {
 	if (_isInitialized) {
 		//You should always destroy the objects in the opposite way they are created
 		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
@@ -184,8 +207,8 @@ void Lullaby::VKRenderer::releaseResources() {
 		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
 
 		//destroy swapchain resources
-		for (int i = 0; i < _swapchainImageViews.size(); i++) {
-			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
+		for (const auto _swapchainImageView : _swapchainImageViews) {
+			vkDestroyImageView(_device, _swapchainImageView, nullptr);
 		}
 
 		vkDestroyDevice(_device, nullptr);

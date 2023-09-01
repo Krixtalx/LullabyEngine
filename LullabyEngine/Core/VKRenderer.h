@@ -31,6 +31,10 @@ namespace Lullaby {
 		VkRenderPass _mainRenderPass;
 		std::vector<VkFramebuffer> _framebuffers;
 
+		//Sync
+		VkSemaphore _presentSemaphore, _renderSemaphore;
+		VkFence _renderFence;
+
 		bool _isInitialized = false;
 
 	public:
@@ -39,7 +43,8 @@ namespace Lullaby {
 		void initCommands();
 		void initFramebuffers();
 		void initDefaultRenderpass();
-		void releaseResources();
+		void initSyncStructures();
+		void releaseResources() const;
 		virtual ~VKRenderer();
 	};
 }

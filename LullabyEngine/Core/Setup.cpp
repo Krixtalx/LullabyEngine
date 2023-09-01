@@ -48,7 +48,7 @@ void Lullaby::Setup::init(const std::string& title, int width, int height, const
 
 }
 
-void Lullaby::Setup::renderLoop() {
+void Lullaby::Setup::renderLoop() const {
 	while (!glfwWindowShouldClose(_window)) {
 		glfwPollEvents();
 	}

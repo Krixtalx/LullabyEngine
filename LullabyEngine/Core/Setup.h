@@ -17,6 +17,6 @@ namespace Lullaby {
 	public:
 		virtual ~Setup();
 		void init(const std::string& title = "Lullaby Engine", int width = 1920, int height = 1080, const bool headless = false);
-		void renderLoop();
+		void renderLoop() const;
 	};
 }
