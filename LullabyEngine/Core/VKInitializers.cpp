@@ -47,3 +47,9 @@ VkRenderPassCreateInfo LullabyHelpers::createRenderPassInfo(uint32_t attachmentC
 	return renderPassInfo;
 }
 
+void LullabyHelpers::checkVulkanError(VkResult result, const std::string& when, const std::source_location& location) {
+	if (result != VK_SUCCESS) {
+		std::cerr << "[" << location.function_name() << "]->Detected vulkan error " << result << " while " << when << std::endl;
+	}
+}
+

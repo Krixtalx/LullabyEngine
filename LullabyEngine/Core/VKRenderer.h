@@ -44,6 +44,9 @@ namespace Lullaby {
 		void initFramebuffers();
 		void initDefaultRenderpass();
 		void initSyncStructures();
+
+		void render();
+
 		void releaseResources() const;
 		virtual ~VKRenderer();
 	};

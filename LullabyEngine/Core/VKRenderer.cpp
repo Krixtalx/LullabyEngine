@@ -94,11 +94,7 @@ void Lullaby::VKRenderer::initCommands() {
 	const auto commandPoolInfo = LullabyHelpers::commandPoolCreateInfo(_graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 	//Create graphics command pool
-	auto result = vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_graphicsCommandPool);
-
-	if (result != VK_SUCCESS) {
-		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating command pool" << std::endl;
-	}
+	LullabyHelpers::checkVulkanError(vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_graphicsCommandPool), "creating command pool");
 
 	//allocate the default command buffer that we will use for rendering
 	//commands will be made from our _graphicsCommandPool
@@ -106,10 +102,7 @@ void Lullaby::VKRenderer::initCommands() {
 	// command level is Primary
 	const auto commandAllocInfo = LullabyHelpers::commandBufferAllocateInfo(_graphicsCommandPool);
 
-	result = vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer);
-	if (result != VK_SUCCESS) {
-		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating command buffer" << std::endl;
-	}
+	LullabyHelpers::checkVulkanError(vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer), "creating command buffer");
 }
 
 void Lullaby::VKRenderer::initFramebuffers() {
@@ -131,9 +124,7 @@ void Lullaby::VKRenderer::initFramebuffers() {
 	//create framebuffers for each of the swapchain image views
 	for (int i = 0; i < swapchain_imagecount; i++) {
 		fb_info.pAttachments = &_swapchainImageViews[i];
-		if (vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]) != VK_SUCCESS) {
-			std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating a framebuffer" << std::endl;
-		}
+		LullabyHelpers::checkVulkanError(vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]), "creating a framebuffer");
 	}
 }
 
@@ -161,9 +152,7 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 	subpass.pColorAttachments = &color_attachment_ref;
 
 	const auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
-	if (vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass) != VK_SUCCESS) {
-		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating the main render pass" << std::endl;
-	}
+	LullabyHelpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
 }
 
 void Lullaby::VKRenderer::initSyncStructures() {
@@ -176,19 +165,20 @@ void Lullaby::VKRenderer::initSyncStructures() {
 	//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	if (vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence) != VK_SUCCESS) {
-		std::cerr << "[" << __FUNCTION__ << "]->Detected vulkan error while creating the main render pass" << std::endl;
-
-	}
+	LullabyHelpers::checkVulkanError(vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence), "creating the main render fence");
 
 	//for the semaphores we don't need any flags
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	semaphoreCreateInfo.pNext = nullptr;
 	semaphoreCreateInfo.flags = 0;
+	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
+	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
+}
 
-	VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore));
-	VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore));
+void Lullaby::VKRenderer::render() {
+	LullabyHelpers::checkVulkanError(vkWaitForFences(_device, 1, &_renderFence, true, 1000000000), "waiting for render fence");
+	LullabyHelpers::checkVulkanError(vkResetFences(_device, 1, &_renderFence), "reseting render fence");
 }
 
 void Lullaby::VKRenderer::releaseResources() const {
