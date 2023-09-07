@@ -179,6 +179,11 @@ void Lullaby::VKRenderer::initSyncStructures() {
 void Lullaby::VKRenderer::render() {
 	LullabyHelpers::checkVulkanError(vkWaitForFences(_device, 1, &_renderFence, true, 1000000000), "waiting for render fence");
 	LullabyHelpers::checkVulkanError(vkResetFences(_device, 1, &_renderFence), "reseting render fence");
+
+	//request image from the swapchain, one second timeout
+	uint32_t swapchainImageIndex;
+	LullabyHelpers::checkVulkanError(vkAcquireNextImageKHR(_device, _swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex), "acquiring next image from swapchain");
+
 }
 
 void Lullaby::VKRenderer::releaseResources() const {
