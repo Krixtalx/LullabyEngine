@@ -107,9 +107,10 @@ void Lullaby::VKRenderer::initCommands() {
 
 void Lullaby::VKRenderer::initFramebuffers() {
 	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
-	VkFramebufferCreateInfo fb_info = {};
-	fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	fb_info.pNext = nullptr;
+	VkFramebufferCreateInfo fb_info = {
+		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+		.pNext = nullptr
+	};
 
 	fb_info.renderPass = _mainRenderPass;
 	fb_info.attachmentCount = 1;
@@ -126,6 +127,7 @@ void Lullaby::VKRenderer::initFramebuffers() {
 		fb_info.pAttachments = &_swapchainImageViews[i];
 		LullabyHelpers::checkVulkanError(vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]), "creating a framebuffer");
 	}
+
 }
 
 void Lullaby::VKRenderer::initDefaultRenderpass() {
@@ -158,9 +160,10 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 void Lullaby::VKRenderer::initSyncStructures() {
 	//create synchronization structures
 
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceCreateInfo.pNext = nullptr;
+	VkFenceCreateInfo fenceCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.pNext = nullptr
+	};
 
 	//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -168,15 +171,17 @@ void Lullaby::VKRenderer::initSyncStructures() {
 	LullabyHelpers::checkVulkanError(vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence), "creating the main render fence");
 
 	//for the semaphores we don't need any flags
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.pNext = nullptr;
-	semaphoreCreateInfo.flags = 0;
+	const VkSemaphoreCreateInfo semaphoreCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0
+	};
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
 }
 
 void Lullaby::VKRenderer::render() {
+	//wait until the GPU has finished rendering the last frame. Timeout of 1 second
 	LullabyHelpers::checkVulkanError(vkWaitForFences(_device, 1, &_renderFence, true, 1000000000), "waiting for render fence");
 	LullabyHelpers::checkVulkanError(vkResetFences(_device, 1, &_renderFence), "reseting render fence");
 
@@ -184,6 +189,36 @@ void Lullaby::VKRenderer::render() {
 	uint32_t swapchainImageIndex;
 	LullabyHelpers::checkVulkanError(vkAcquireNextImageKHR(_device, _swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex), "acquiring next image from swapchain");
 
+	LullabyHelpers::checkVulkanError(vkResetCommandBuffer(_mainCommandBuffer, 0), "reseting command buffer");
+
+	//Begin the command buffer recording. We will use this command buffer exactly once, so we want to let Vulkan know that
+	const VkCommandBufferBeginInfo cmdBeginInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.pNext = nullptr,
+		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+		.pInheritanceInfo = nullptr
+	};
+
+	LullabyHelpers::checkVulkanError(vkBeginCommandBuffer(_mainCommandBuffer, &cmdBeginInfo), "beginning command buffer recording");
+
+	//make a clear-color from frame number. This will flash with a 120*pi frame period.
+	VkClearValue clearValue;
+	const float flash = abs(sin(_frameNumber++ / 120.f));
+	clearValue.color = { { 0.0f, 0.0f, flash, 1.0f } };
+
+	//start the main renderpass.
+	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
+	VkRenderPassBeginInfo rpInfo = {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.pNext = nullptr,
+		.renderPass = _mainRenderPass,
+		.renderArea = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
+		.framebuffer = _framebuffers[swapchainImageIndex],
+		.clearValueCount = 1,
+		.pClearValues = &clearValue
+	};
+
+	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void Lullaby::VKRenderer::releaseResources() const {

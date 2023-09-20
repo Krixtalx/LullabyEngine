@@ -20,7 +20,7 @@ namespace Lullaby {
 		VkFormat _swapchainImageFormat;
 		std::vector<VkImage> _swapchainImages;
 		std::vector<VkImageView> _swapchainImageViews;
-		ivec2 _renderResolution;
+		uvec2 _renderResolution;
 
 		//GPU Commands
 		VkCommandPool _graphicsCommandPool; //the command pool for our graphics commands
@@ -36,7 +36,7 @@ namespace Lullaby {
 		VkFence _renderFence;
 
 		bool _isInitialized = false;
-
+		uint64_t _frameNumber = 0;
 	public:
 		void initRenderer(GLFWwindow* window);
 		void initSwapchain(const ivec2 windowSize);
