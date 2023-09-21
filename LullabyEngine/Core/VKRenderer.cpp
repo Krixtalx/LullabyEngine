@@ -208,17 +208,53 @@ void Lullaby::VKRenderer::render() {
 
 	//start the main renderpass.
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
-	VkRenderPassBeginInfo rpInfo = {
+	const VkRenderPassBeginInfo rpInfo = {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 		.pNext = nullptr,
 		.renderPass = _mainRenderPass,
-		.renderArea = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
 		.framebuffer = _framebuffers[swapchainImageIndex],
+		.renderArea = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
 		.clearValueCount = 1,
 		.pClearValues = &clearValue
 	};
 
 	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	//finalize the render pass
+	vkCmdEndRenderPass(_mainCommandBuffer);
+	LullabyHelpers::checkVulkanError(vkEndCommandBuffer(_mainCommandBuffer), "ending command buffer");
+
+	//prepare the submission to the queue.
+	//we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
+	//we will signal the _renderSemaphore, to signal that rendering has finished
+	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	const VkSubmitInfo submit = {
+		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+		.pNext = nullptr,
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &_presentSemaphore,
+		.pWaitDstStageMask = &waitStage,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &_mainCommandBuffer,
+		.signalSemaphoreCount = 1,
+		.pSignalSemaphores = &_renderSemaphore,
+	};
+	LullabyHelpers::checkVulkanError(vkQueueSubmit(_graphicsQueue, 1, &submit, _renderFence), "submitting  work to graphics queue");
+
+	// this will put the image we just rendered into the visible window.
+	// we want to wait on the _renderSemaphore for that,
+	// as it's necessary that drawing commands have finished before the image is displayed to the user
+	const VkPresentInfoKHR presentInfo = {
+		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		.pNext = nullptr,
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &_presentSemaphore,
+		.swapchainCount = 1,
+		.pSwapchains = &_swapchain,
+		.pImageIndices = &swapchainImageIndex
+	};
+	LullabyHelpers::checkVulkanError(vkQueuePresentKHR(_graphicsQueue, &presentInfo), "presenting image");
+
 }
 
 void Lullaby::VKRenderer::releaseResources() const {
