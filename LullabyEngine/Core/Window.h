@@ -3,7 +3,7 @@
 #include "VKRenderer.h"
 
 namespace Lullaby {
-	class Setup final : public Singleton<Setup> {
+	class Window final : public Singleton<Window> {
 		friend class Singleton;
 		std::string _title;
 		ivec2 _resolution;
@@ -12,12 +12,12 @@ namespace Lullaby {
 		GLFWwindow* _window;
 		bool _isHeadless = false;
 
-		Setup();
+		Window();
 		void releaseResources();
 
 	public:
-		~Setup();
-		void init(const std::string& title = "Lullaby Engine", int width = 1920, int height = 1080, const bool headless = false);
+		~Window();
+		void init(const std::string& title = "Lullaby Engine", int width = 1280, int height = 720, const bool headless = false);
 		void renderLoop() const;
 	};
 }

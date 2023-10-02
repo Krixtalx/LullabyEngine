@@ -5,24 +5,6 @@
 //#define VK_NO_PROTOTYPES
 //#define VOLK_IMPLEMENTATION
 
-#include <any>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <execution>
-#include <iostream>
-#include <filesystem>
-#include <format>
-#include <fstream>
-#include <functional>
-#include <memory>
-#include <numeric>
-#include <sstream>
-#include <cstdio>
-#include <ctime>
-#include <thread>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 //import std;
 

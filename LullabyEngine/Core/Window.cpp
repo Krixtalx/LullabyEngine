@@ -1,21 +1,21 @@
 #include "stdafx.h"
-#include "Setup.h"
+#include "Window.h"
 
-Lullaby::Setup::Setup() : _window(nullptr) {
+Lullaby::Window::Window() : _window(nullptr) {
 	_renderer = VKRenderer::getInstance();
 }
 
-void Lullaby::Setup::releaseResources() {
+void Lullaby::Window::releaseResources() {
 	glfwDestroyWindow(_window); // - Cerramos y destruimos la ventana de la aplicación.
 	_window = nullptr;
 	glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.
 }
 
-Lullaby::Setup::~Setup() {
+Lullaby::Window::~Window() {
 	releaseResources();
 }
 
-void Lullaby::Setup::init(const std::string& title, int width, int height, const bool headless) {
+void Lullaby::Window::init(const std::string& title, int width, int height, const bool headless) {
 	_isHeadless = headless;
 	if (!headless) {
 		// - Inicializa GLFW. Es un proceso que sólo debe realizarse una vez en la aplicación
@@ -27,17 +27,16 @@ void Lullaby::Setup::init(const std::string& title, int width, int height, const
 		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 		int count = 0;
 		const auto monitors = glfwGetMonitors(&count);
-		glfwGetMonitorWorkarea(monitors[0], nullptr, nullptr, &width, &height);
+		glfwGetMonitorWorkarea(monitors[0], nullptr, nullptr, &_resolution.x, &_resolution.y);
 
 		// - Tamaño, título de la ventana, en ventana y no en pantalla completa, sin compartir recursos con otras ventanas.
 		_title = title;
-		_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+		_window = glfwCreateWindow(_resolution.x, _resolution.y, title.c_str(), nullptr, nullptr);
 		// - Comprobamos si la creación de la ventana ha tenido éxito.
 		if (_window == nullptr) {
 			glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.
 			throw std::runtime_error("Failed to open GLFW window!");
 		}
-		_resolution = { width, height };
 	}
 	_renderer->initRenderer(_window);
 	if (!headless)
@@ -45,11 +44,13 @@ void Lullaby::Setup::init(const std::string& title, int width, int height, const
 	_renderer->initCommands();
 	_renderer->initDefaultRenderpass();
 	_renderer->initFramebuffers();
-
+	_renderer->initSyncStructures();
+	std::cout << "Lullaby renderer initialized" << std::endl;
 }
 
-void Lullaby::Setup::renderLoop() const {
+void Lullaby::Window::renderLoop() const {
 	while (!glfwWindowShouldClose(_window)) {
 		glfwPollEvents();
+		_renderer->render();
 	}
 }

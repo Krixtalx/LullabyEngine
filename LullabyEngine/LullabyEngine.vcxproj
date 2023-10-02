@@ -162,7 +162,7 @@
     <ClCompile Include="Core\VKRenderer.cpp" />
     <ClCompile Include="Geometry\AABB.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Core\Setup.cpp" />
+    <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -175,7 +175,7 @@
     <ClInclude Include="Core\VKInitializers.h" />
     <ClInclude Include="Core\VKRenderer.h" />
     <ClInclude Include="Geometry\AABB.h" />
-    <ClInclude Include="Core\Setup.h" />
+    <ClInclude Include="Core\Window.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Utilities\Singleton.h" />

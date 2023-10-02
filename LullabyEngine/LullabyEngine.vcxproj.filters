@@ -63,7 +63,7 @@
     <ClCompile Include="Geometry\AABB.cpp">
       <Filter>Archivos de origen\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Setup.cpp">
+    <ClCompile Include="Core\Window.cpp">
       <Filter>Archivos de origen\Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\VKRenderer.cpp">
@@ -92,7 +92,7 @@
     <ClInclude Include="Utilities\Singleton.h">
       <Filter>Archivos de encabezado\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Setup.h">
+    <ClInclude Include="Core\Window.h">
       <Filter>Archivos de encabezado\Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\VKRenderer.h">

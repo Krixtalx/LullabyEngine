@@ -2,7 +2,7 @@
 #include "Core/Setup.h"
 
 int main() {
-	const auto setup = Lullaby::Setup::getInstance();
+	const auto setup = Lullaby::Window::getInstance();
 	std::cout << "Starting Lullaby Engine..." << std::endl;
 
 	try {

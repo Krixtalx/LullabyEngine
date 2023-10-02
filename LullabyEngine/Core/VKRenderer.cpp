@@ -68,7 +68,6 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 }
 
 void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
-	_renderResolution = windowSize;
 	vkb::SwapchainBuilder swapchainBuilder{ _chosenGPU,_device,_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -85,6 +84,7 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 	_swapchainImageViews = vkbSwapchain.get_image_views().value();
 
 	_swapchainImageFormat = vkbSwapchain.image_format;
+	_renderResolution = { vkbSwapchain.extent.width, vkbSwapchain.extent.height };
 }
 
 void Lullaby::VKRenderer::initCommands() {
@@ -162,11 +162,10 @@ void Lullaby::VKRenderer::initSyncStructures() {
 
 	VkFenceCreateInfo fenceCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-		.pNext = nullptr
+		.pNext = nullptr,
+		//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
+		.flags = VK_FENCE_CREATE_SIGNALED_BIT
 	};
-
-	//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
-	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	LullabyHelpers::checkVulkanError(vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence), "creating the main render fence");
 
@@ -204,7 +203,7 @@ void Lullaby::VKRenderer::render() {
 	//make a clear-color from frame number. This will flash with a 120*pi frame period.
 	VkClearValue clearValue;
 	const float flash = abs(sin(_frameNumber++ / 120.f));
-	clearValue.color = { { 0.0f, 0.0f, flash, 1.0f } };
+	clearValue.color = { { flash, 0.0f, flash, 1.0f } };
 
 	//start the main renderpass.
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -248,10 +247,10 @@ void Lullaby::VKRenderer::render() {
 		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 		.pNext = nullptr,
 		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = &_presentSemaphore,
+		.pWaitSemaphores = &_renderSemaphore,
 		.swapchainCount = 1,
 		.pSwapchains = &_swapchain,
-		.pImageIndices = &swapchainImageIndex
+		.pImageIndices = &swapchainImageIndex,
 	};
 	LullabyHelpers::checkVulkanError(vkQueuePresentKHR(_graphicsQueue, &presentInfo), "presenting image");
 
