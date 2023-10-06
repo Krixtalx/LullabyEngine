@@ -1,6 +1,5 @@
 #pragma once
-
-#include "stdafx.h"
+#include <memory>
 
 template<typename T>
 class Singleton {

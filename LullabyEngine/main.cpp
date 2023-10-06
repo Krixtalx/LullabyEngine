@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Core/Setup.h"
+#include "Core/Window.h"
 
 int main() {
 	const auto setup = Lullaby::Window::getInstance();
