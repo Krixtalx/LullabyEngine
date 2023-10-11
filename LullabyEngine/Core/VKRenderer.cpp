@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "VKRenderer.h"
+
+#include "PipelineBuilder.h"
 #include "VKInitializers.h"
 
 void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
@@ -177,6 +179,25 @@ void Lullaby::VKRenderer::initSyncStructures() {
 	};
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
+}
+
+void Lullaby::VKRenderer::initPipelines() {
+	VkShaderModule* triangleVertexShader, * triangleFragShader;
+
+	triangleVertexShader = PipelineBuilder::loadShaderModule(_device, "LullabyEngine/Shaders/TriangleVertex.spv");
+
+	if (triangleVertexShader)
+		std::cout << "Triangle vertex shader successfully loaded" << std::endl;
+	else
+		std::cerr << "Error when building the triangle vertex shader module" << std::endl;
+
+
+	triangleFragShader = PipelineBuilder::loadShaderModule(_device, "LullabyEngine/Shaders/TriangleFragment.spv");
+
+	if (triangleFragShader)
+		std::cout << "Triangle vertex shader successfully loaded" << std::endl;
+	else
+		std::cerr << "Error when building the triangle vertex shader module" << std::endl;
 }
 
 void Lullaby::VKRenderer::render() {

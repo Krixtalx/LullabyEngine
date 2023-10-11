@@ -1,0 +1,2 @@
+C:\GitHub\LullabyEngine\Dependencies\slang\bin\windows-x64\release\slangc.exe Triangle.slang -entry vertexMain -target spirv -o TriangleVertex.spv
+C:\GitHub\LullabyEngine\Dependencies\slang\bin\windows-x64\release\slangc.exe Triangle.slang -entry fragmentMain -target spirv -o TriangleFragment.spv

@@ -46,6 +46,12 @@
     <Filter Include="Archivos de origen\Dependencies">
       <UniqueIdentifier>{e9f59cc9-ea1a-4d3b-a3b7-bbeff3738b5b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\Core\Shaders">
+      <UniqueIdentifier>{93baeaee-e0f0-4275-a8f2-77ac1f8866ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Core\Shaders">
+      <UniqueIdentifier>{a0445f31-4375-4984-b086-073b06680100}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -75,6 +81,9 @@
     <ClCompile Include="Core\VKInitializers.cpp">
       <Filter>Archivos de origen\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\PipelineBuilder.cpp">
+      <Filter>Archivos de origen\Core\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -103,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\PipelineBuilder.h">
+      <Filter>Archivos de encabezado\Core\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

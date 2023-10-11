@@ -44,6 +44,7 @@ namespace Lullaby {
 		void initFramebuffers();
 		void initDefaultRenderpass();
 		void initSyncStructures();
+		void initPipelines();
 
 		void render();
 

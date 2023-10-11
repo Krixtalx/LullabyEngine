@@ -45,6 +45,7 @@ void Lullaby::Window::init(const std::string& title, int width, int height, cons
 	_renderer->initDefaultRenderpass();
 	_renderer->initFramebuffers();
 	_renderer->initSyncStructures();
+	_renderer->initPipelines();
 	std::cout << "Lullaby renderer initialized" << std::endl;
 }
 

@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <fstream>
 
 //#include "Volk/volk.h"
 #include "vulkan/vulkan.h"
