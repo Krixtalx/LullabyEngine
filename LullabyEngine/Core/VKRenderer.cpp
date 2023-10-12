@@ -27,7 +27,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 		_debugMesseger = vkbInstance.debug_messenger;
 
 		//use vkbootstrap to select a GPU.
-		//We want a GPU that can write to the SDL surface and supports Vulkan 1.1
+		//We want a GPU that can write to the GLFW surface and supports Vulkan 1.1
 		vkb::PhysicalDeviceSelector selector(vkbInstance);
 		vkb::PhysicalDevice physicalDevice;
 

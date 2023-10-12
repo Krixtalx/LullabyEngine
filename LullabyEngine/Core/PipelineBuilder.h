@@ -1,12 +1,11 @@
 #pragma once
-#include <unordered_map>
 
 namespace Lullaby {
 
-	class PipelineBuilder : public Singleton<PipelineBuilder> {
-		friend Singleton;
+	class PipelineBuilder {
 
-	private:
+
+	public:
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStages;
 		VkPipelineVertexInputStateCreateInfo			_vertexInputInfo;
 		VkPipelineInputAssemblyStateCreateInfo			_inputAssembly;
@@ -18,9 +17,11 @@ namespace Lullaby {
 		VkPipelineLayout								_pipelineLayout;
 
 		PipelineBuilder() = default;
-	public:
 		virtual ~PipelineBuilder() = default;
 
+		VkPipeline buildPipeline(VkDevice& device, VkRenderPass& renderPass);
+
 		static VkShaderModule* loadShaderModule(const VkDevice& device, const std::string& path);
+		static VkPipelineVertexInputStateCreateInfo defaultVertexInputInfo();
 	};
 }

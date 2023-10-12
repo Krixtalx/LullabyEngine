@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "PipelineBuilder.h"
 
+VkPipeline Lullaby::PipelineBuilder::buildPipeline(VkDevice& device, VkRenderPass& renderPass) {
+
+	return VkPipeline();
+}
+
 VkShaderModule* Lullaby::PipelineBuilder::loadShaderModule(const VkDevice& device, const std::string& path) {
 	//open the file. With cursor at the end
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
@@ -37,4 +42,14 @@ VkShaderModule* Lullaby::PipelineBuilder::loadShaderModule(const VkDevice& devic
 	vkCreateShaderModule(device, &createInfo, nullptr, shaderModule);
 
 	return shaderModule;
+}
+
+VkPipelineVertexInputStateCreateInfo Lullaby::PipelineBuilder::defaultVertexInputInfo() {
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+		.pNext = nullptr,
+		.pVertexBindingDescriptions = 0,
+		.vertexAttributeDescriptionCount = 0,
+	};
+	return vertexInputInfo;
 }
