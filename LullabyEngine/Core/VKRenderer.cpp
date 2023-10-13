@@ -182,9 +182,8 @@ void Lullaby::VKRenderer::initSyncStructures() {
 }
 
 void Lullaby::VKRenderer::initPipelines() {
-	VkShaderModule* triangleVertexShader, * triangleFragShader;
-
-	triangleVertexShader = PipelineBuilder::loadShaderModule(_device, "LullabyEngine/Shaders/TriangleVertex.spv");
+	const VkShaderModule triangleVertexShader = PipelineBuilder::loadShaderModule(
+		_device, "Shaders/TriangleVertex.spv");
 
 	if (triangleVertexShader)
 		std::cout << "Triangle vertex shader successfully loaded" << std::endl;
@@ -192,12 +191,32 @@ void Lullaby::VKRenderer::initPipelines() {
 		std::cerr << "Error when building the triangle vertex shader module" << std::endl;
 
 
-	triangleFragShader = PipelineBuilder::loadShaderModule(_device, "LullabyEngine/Shaders/TriangleFragment.spv");
+	const VkShaderModule triangleFragShader = PipelineBuilder::loadShaderModule(
+		_device, "Shaders/TriangleFragment.spv");
 
 	if (triangleFragShader)
-		std::cout << "Triangle vertex shader successfully loaded" << std::endl;
+		std::cout << "Triangle fragment shader successfully loaded" << std::endl;
 	else
-		std::cerr << "Error when building the triangle vertex shader module" << std::endl;
+		std::cerr << "Error when building the triangle fragment shader module" << std::endl;
+
+	const auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
+	LullabyHelpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_trianglePipelineLayout), "creating pipeline layout");
+
+	PipelineInfo info{
+		._shaderStages = {
+			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader),
+			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
+		},
+		._vertexInputInfo = PipelineBuilder::defaultVertexInputInfo(),
+		._inputAssembly = PipelineBuilder::defaultInputAssemblyInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
+		._viewport = {.x = .0f, .y = .0f, .width = (float)_renderResolution.x, .height = (float)_renderResolution.y, .minDepth = .0f, .maxDepth = 1.0f},
+		._scissor = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
+		._rasterizer = PipelineBuilder::defaultRasterizationInfo(VK_POLYGON_MODE_FILL),
+		._colorBlendAttachment = PipelineBuilder::defaultColorBlendState(),
+		._multisampling = PipelineBuilder::defaultMultisampleInfo(),
+		._pipelineLayout = _trianglePipelineLayout
+	};
+	_trianglePipeline = PipelineBuilder::buildPipeline(info, _device, _mainRenderPass);
 }
 
 void Lullaby::VKRenderer::render() {
@@ -239,6 +258,9 @@ void Lullaby::VKRenderer::render() {
 	};
 
 	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	vkCmdBindPipeline(_mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _trianglePipeline);
+	vkCmdDraw(_mainCommandBuffer, 3, 1, 0, 0);
 
 	//finalize the render pass
 	vkCmdEndRenderPass(_mainCommandBuffer);

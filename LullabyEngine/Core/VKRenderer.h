@@ -35,6 +35,10 @@ namespace Lullaby {
 		VkSemaphore _presentSemaphore = nullptr, _renderSemaphore = nullptr;
 		VkFence _renderFence = nullptr;
 
+		//Pipelines
+		VkPipeline _trianglePipeline = nullptr;
+		VkPipelineLayout _trianglePipelineLayout = nullptr;
+
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;
 	public:

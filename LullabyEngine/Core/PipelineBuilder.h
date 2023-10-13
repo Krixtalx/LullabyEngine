@@ -2,10 +2,7 @@
 
 namespace Lullaby {
 
-	class PipelineBuilder {
-
-
-	public:
+	struct PipelineInfo {
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStages;
 		VkPipelineVertexInputStateCreateInfo			_vertexInputInfo;
 		VkPipelineInputAssemblyStateCreateInfo			_inputAssembly;
@@ -16,12 +13,22 @@ namespace Lullaby {
 		VkPipelineMultisampleStateCreateInfo			_multisampling;
 		VkPipelineLayout								_pipelineLayout;
 
+	};
+
+	class PipelineBuilder {
 		PipelineBuilder() = default;
 		virtual ~PipelineBuilder() = default;
 
-		VkPipeline buildPipeline(VkDevice& device, VkRenderPass& renderPass);
+	public:
+		static VkPipeline buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass);
 
-		static VkShaderModule* loadShaderModule(const VkDevice& device, const std::string& path);
+		static VkShaderModule loadShaderModule(const VkDevice& device, const std::string& path);
+		static VkPipelineShaderStageCreateInfo defaultShaderStageInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule);
 		static VkPipelineVertexInputStateCreateInfo defaultVertexInputInfo();
+		static VkPipelineInputAssemblyStateCreateInfo defaultInputAssemblyInfo(VkPrimitiveTopology topology);
+		static VkPipelineRasterizationStateCreateInfo defaultRasterizationInfo(VkPolygonMode polygonMode);
+		static VkPipelineMultisampleStateCreateInfo defaultMultisampleInfo();
+		static VkPipelineColorBlendAttachmentState defaultColorBlendState();
+		static VkPipelineLayoutCreateInfo defaultLayoutInfo();
 	};
 }
