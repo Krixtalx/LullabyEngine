@@ -8,19 +8,20 @@ struct Fragment
 
 struct VertexStageOutput
 {
-    float3          color           : float3;
-    float4          sv_position     : SV_Position;
+    float3 color : float3;
+    float4 sv_position : SV_Position;
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(uint vertexID : SV_VertexID,){
+VertexStageOutput vertexMain(uint vertexId: SV_VertexID){
     VertexStageOutput output;
-    const float3 positions[3] = {
-		float3(1.f,1.f, 0.0f),
-		float3(-1.f,1.f, 0.0f),
-		float3(0.f,-1.f, 0.0f)
-	};
-    output.sv_position = (positions[vertexID], 1.0f);
+    static const float3 positions[3] = {
+        float3(1.f, 1.f, 0.0f),
+        float3(-1.f, 1.f, 0.0f),
+        float3(0.f, -1.f, 0.0f)
+    };
+    output.sv_position = (positions[vertexId], 1.0f);
+    output.color = { .0f, 1.f, 0.f };
     return output;
 }
 

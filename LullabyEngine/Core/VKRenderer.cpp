@@ -1,3 +1,4 @@
+// ReSharper disable All
 #include "stdafx.h"
 #include "VKRenderer.h"
 
@@ -144,16 +145,18 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 		VK_IMAGE_LAYOUT_UNDEFINED, //we don't know nor care about the starting layout of the attachment
 		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR); //after the renderpass ends, the image has to be on a layout ready for display
 
-	VkAttachmentReference color_attachment_ref = {};
-	//attachment number will index into the pAttachments array in the parent renderpass itself
-	color_attachment_ref.attachment = 0;
-	color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference color_attachment_ref = {
+		//attachment number will index into the pAttachments array in the parent renderpass itself
+		.attachment = 0,
+		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	};
 
 	//we are going to create 1 subpass, which is the minimum you can do
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &color_attachment_ref;
+	VkSubpassDescription subpass = {
+		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+		.colorAttachmentCount = 1,
+		.pColorAttachments = &color_attachment_ref
+	};
 
 	const auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
 	LullabyHelpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
@@ -209,8 +212,17 @@ void Lullaby::VKRenderer::initPipelines() {
 		},
 		._vertexInputInfo = PipelineBuilder::defaultVertexInputInfo(),
 		._inputAssembly = PipelineBuilder::defaultInputAssemblyInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
-		._viewport = {.x = .0f, .y = .0f, .width = (float)_renderResolution.x, .height = (float)_renderResolution.y, .minDepth = .0f, .maxDepth = 1.0f},
-		._scissor = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
+		._viewport = {
+			.x = .0f,
+			.y = .0f,
+			.width = (float)_renderResolution.x,
+			.height = (float)_renderResolution.y,
+			.minDepth = .0f,
+			.maxDepth = 1.0f},
+		._scissor = {
+			.offset = {0,0},
+			.extent = {_renderResolution.x, _renderResolution.y}
+		},
 		._rasterizer = PipelineBuilder::defaultRasterizationInfo(VK_POLYGON_MODE_FILL),
 		._colorBlendAttachment = PipelineBuilder::defaultColorBlendState(),
 		._multisampling = PipelineBuilder::defaultMultisampleInfo(),
@@ -252,7 +264,10 @@ void Lullaby::VKRenderer::render() {
 		.pNext = nullptr,
 		.renderPass = _mainRenderPass,
 		.framebuffer = _framebuffers[swapchainImageIndex],
-		.renderArea = {.offset = {0,0}, .extent = {_renderResolution.x, _renderResolution.y}},
+		.renderArea = {
+			.offset = {0,0},
+			.extent = {_renderResolution.x, _renderResolution.y}
+		},
 		.clearValueCount = 1,
 		.pClearValues = &clearValue
 	};
