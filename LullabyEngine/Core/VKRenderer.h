@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DeletionQueue.h"
 #include "VkBootstrap.h"
 
 namespace Lullaby {
@@ -24,7 +25,7 @@ namespace Lullaby {
 
 		//GPU Commands
 		VkCommandPool _graphicsCommandPool = nullptr; //the command pool for our graphics commands
-		//VkCommandPool _computeCommandPool; //the command pool for our graphics commands
+		//VkCommandPool _computeCommandPool; //the command pool for our compute commands
 		VkCommandBuffer _mainCommandBuffer = nullptr; //the buffer we will record into
 
 		//Render pass
@@ -39,6 +40,9 @@ namespace Lullaby {
 		VkPipeline _trianglePipeline = nullptr;
 		VkPipelineLayout _trianglePipelineLayout = nullptr;
 
+		//Deletion queue
+		DeletionQueue _mainDeletionQueue;
+
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;
 	public:
@@ -52,7 +56,7 @@ namespace Lullaby {
 
 		void render();
 
-		void releaseResources() const;
+		void releaseResources();
 		virtual ~VKRenderer();
 	};
 }

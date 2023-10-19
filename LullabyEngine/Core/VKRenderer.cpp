@@ -88,6 +88,9 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 
 	_swapchainImageFormat = vkbSwapchain.image_format;
 	_renderResolution = { vkbSwapchain.extent.width, vkbSwapchain.extent.height };
+	_mainDeletionQueue.addDeletor([=]() {
+		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+		});
 }
 
 void Lullaby::VKRenderer::initCommands() {
@@ -106,6 +109,9 @@ void Lullaby::VKRenderer::initCommands() {
 	const auto commandAllocInfo = LullabyHelpers::commandBufferAllocateInfo(_graphicsCommandPool);
 
 	LullabyHelpers::checkVulkanError(vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer), "creating command buffer");
+	_mainDeletionQueue.addDeletor([=]() {
+		vkDestroyCommandPool(_device, _graphicsCommandPool, nullptr);
+		});
 }
 
 void Lullaby::VKRenderer::initFramebuffers() {
@@ -129,6 +135,10 @@ void Lullaby::VKRenderer::initFramebuffers() {
 	for (int i = 0; i < swapchain_imagecount; i++) {
 		fb_info.pAttachments = &_swapchainImageViews[i];
 		LullabyHelpers::checkVulkanError(vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]), "creating a framebuffer");
+		_mainDeletionQueue.addDeletor([=]() {
+			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
+			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
+			});
 	}
 
 }
@@ -160,6 +170,10 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 
 	const auto renderPassInfo = LullabyHelpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
 	LullabyHelpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
+
+	_mainDeletionQueue.addDeletor([=]() {
+		vkDestroyRenderPass(_device, _mainRenderPass, nullptr);
+		});
 }
 
 void Lullaby::VKRenderer::initSyncStructures() {
@@ -182,6 +196,10 @@ void Lullaby::VKRenderer::initSyncStructures() {
 	};
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
 	LullabyHelpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
+	_mainDeletionQueue.addDeletor([=]() {
+		vkDestroySemaphore(_device, _presentSemaphore, nullptr);
+		vkDestroySemaphore(_device, _renderSemaphore, nullptr);
+		});
 }
 
 void Lullaby::VKRenderer::initPipelines() {
@@ -229,6 +247,16 @@ void Lullaby::VKRenderer::initPipelines() {
 		._pipelineLayout = _trianglePipelineLayout
 	};
 	_trianglePipeline = PipelineBuilder::buildPipeline(info, _device, _mainRenderPass);
+
+	vkDestroyShaderModule(_device, triangleVertexShader, nullptr);
+	vkDestroyShaderModule(_device, triangleFragShader, nullptr);
+	_mainDeletionQueue.addDeletor([=]() {
+		//destroy the 2 pipelines we have created
+		vkDestroyPipeline(_device, _trianglePipeline, nullptr);
+
+		//destroy the pipeline layout that they use
+		vkDestroyPipelineLayout(_device, _trianglePipelineLayout, nullptr);
+		});
 }
 
 void Lullaby::VKRenderer::render() {
@@ -314,25 +342,12 @@ void Lullaby::VKRenderer::render() {
 
 }
 
-void Lullaby::VKRenderer::releaseResources() const {
+void Lullaby::VKRenderer::releaseResources() {
 	if (_isInitialized) {
-		//You should always destroy the objects in the opposite way they are created
-		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+		//make sure the GPU has stopped doing its things
+		vkWaitForFences(_device, 1, &_renderFence, true, 1000000000);
 
-		for (int i = 0; i < _swapchainImages.size(); i++) {
-			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
-		}
-
-		vkDestroyRenderPass(_device, _mainRenderPass, nullptr);
-
-		vkDestroyCommandPool(_device, _graphicsCommandPool, nullptr);
-
-		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
-
-		//destroy swapchain resources
-		for (const auto _swapchainImageView : _swapchainImageViews) {
-			vkDestroyImageView(_device, _swapchainImageView, nullptr);
-		}
+		_mainDeletionQueue.flush();
 
 		vkDestroyDevice(_device, nullptr);
 		//VkPhysicalDevice is not a resource per-se, as it's a handle to system GPU. So, you can't destroy it.

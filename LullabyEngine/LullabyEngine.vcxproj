@@ -159,6 +159,7 @@
     </ClCompile>
     <ClCompile Include="Core\Camera\Camera.cpp" />
     <ClCompile Include="Core\Camera\CameraProjection.cpp" />
+    <ClCompile Include="Core\DeletionQueue.cpp" />
     <ClCompile Include="Core\PipelineBuilder.cpp" />
     <ClCompile Include="Core\VKRenderer.cpp" />
     <ClCompile Include="Geometry\AABB.cpp" />
@@ -173,6 +174,7 @@
   <ItemGroup>
     <ClInclude Include="Core\Camera\Camera.h" />
     <ClInclude Include="Core\Camera\CameraProjection.h" />
+    <ClInclude Include="Core\DeletionQueue.h" />
     <ClInclude Include="Core\PipelineBuilder.h" />
     <ClInclude Include="Core\VKInitializers.h" />
     <ClInclude Include="Core\VKRenderer.h" />

@@ -91,7 +91,7 @@ VkShaderModule Lullaby::PipelineBuilder::loadShaderModule(const VkDevice& device
 
 VkPipelineShaderStageCreateInfo Lullaby::PipelineBuilder::defaultShaderStageInfo(VkShaderStageFlagBits stage,
 	VkShaderModule shaderModule) {
-	VkPipelineShaderStageCreateInfo info{
+	const VkPipelineShaderStageCreateInfo info{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 		.pNext = nullptr,
 		//Shader stage

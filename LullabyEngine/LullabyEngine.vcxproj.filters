@@ -84,6 +84,9 @@
     <ClCompile Include="Core\PipelineBuilder.cpp">
       <Filter>Archivos de origen\Core\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="Core\DeletionQueue.cpp">
+      <Filter>Archivos de origen\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="Core\PipelineBuilder.h">
       <Filter>Archivos de encabezado\Core\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DeletionQueue.h">
+      <Filter>Archivos de encabezado\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
