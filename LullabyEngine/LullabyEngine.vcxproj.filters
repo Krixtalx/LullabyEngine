@@ -52,6 +52,15 @@
     <Filter Include="Archivos de origen\Core\Shaders">
       <UniqueIdentifier>{a0445f31-4375-4984-b086-073b06680100}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\Core\DataContainers">
+      <UniqueIdentifier>{6cf71c71-0bf7-4518-a447-a599dddc3d98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Dependencies">
+      <UniqueIdentifier>{d5dacd11-8e28-4c80-92b5-bf200d4e39d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Core\DataContainers">
+      <UniqueIdentifier>{7f6dd27d-9c48-4dc2-bb46-391704a3e12a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -81,11 +90,14 @@
     <ClCompile Include="Core\VKInitializers.cpp">
       <Filter>Archivos de origen\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\PipelineBuilder.cpp">
+    <ClCompile Include="Core\Shaders\PipelineBuilder.cpp">
       <Filter>Archivos de origen\Core\Shaders</Filter>
     </ClCompile>
     <ClCompile Include="Core\DeletionQueue.cpp">
       <Filter>Archivos de origen\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DataContainers\Mesh.cpp">
+      <Filter>Archivos de origen\Core\DataContainers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,11 +128,20 @@
     <ClInclude Include="resource.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="Core\PipelineBuilder.h">
+    <ClInclude Include="Core\Shaders\PipelineBuilder.h">
       <Filter>Archivos de encabezado\Core\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="Core\DeletionQueue.h">
       <Filter>Archivos de encabezado\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DataContainers\Types.h">
+      <Filter>Archivos de encabezado\Core\DataContainers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\VMA\include\vk_mem_alloc.h">
+      <Filter>Archivos de encabezado\Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DataContainers\Mesh.h">
+      <Filter>Archivos de encabezado\Core\DataContainers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

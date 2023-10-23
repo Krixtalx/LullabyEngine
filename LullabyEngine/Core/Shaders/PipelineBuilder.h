@@ -1,7 +1,6 @@
 #pragma once
 
 namespace Lullaby {
-
 	struct PipelineInfo {
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStages;
 		VkPipelineVertexInputStateCreateInfo			_vertexInputInfo;
@@ -12,10 +11,9 @@ namespace Lullaby {
 		VkPipelineColorBlendAttachmentState				_colorBlendAttachment;
 		VkPipelineMultisampleStateCreateInfo			_multisampling;
 		VkPipelineLayout								_pipelineLayout;
-
 	};
 
-	class PipelineBuilder {
+	class PipelineBuilder final {
 		PipelineBuilder() = default;
 		virtual ~PipelineBuilder() = default;
 

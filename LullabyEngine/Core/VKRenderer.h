@@ -2,13 +2,15 @@
 
 #include "DeletionQueue.h"
 #include "VkBootstrap.h"
+#include "vk_mem_alloc.h"
+#include "DataContainers/Mesh.h"
 
 namespace Lullaby {
 	class VKRenderer : public Singleton<VKRenderer> {
 		//Vulkan objects
 		VkInstance _instance = nullptr; //Vulkan instance. 
 		VkDebugUtilsMessengerEXT _debugMesseger = nullptr;
-		VkPhysicalDevice _chosenGPU = nullptr;
+		VkPhysicalDevice _choosenGPU = nullptr;
 		VkDevice _device = nullptr; //Vulkan device for commands
 		VkQueue _graphicsQueue = nullptr; //queue we will submit to
 		uint32_t _graphicsQueueFamily = 0; //family of that queue
@@ -40,8 +42,14 @@ namespace Lullaby {
 		VkPipeline _trianglePipeline = nullptr;
 		VkPipelineLayout _trianglePipelineLayout = nullptr;
 
+		//Memory allocator
+		VmaAllocator _memoryAllocator = nullptr;
+
 		//Deletion queue
 		DeletionQueue _mainDeletionQueue;
+
+		//Sample model
+		Mesh _triangleMesh;
 
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;
@@ -55,6 +63,9 @@ namespace Lullaby {
 		void initPipelines();
 
 		void render();
+
+		void sampleTriangle();
+		void uploadGeometry(Mesh& mesh);
 
 		void releaseResources();
 		virtual ~VKRenderer();

@@ -1,9 +1,10 @@
 // ReSharper disable All
 #include "stdafx.h"
 #include "VKRenderer.h"
-
-#include "PipelineBuilder.h"
+#include "Shaders\PipelineBuilder.h"
 #include "VKInitializers.h"
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
 
 void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 	if (!_isInitialized) {
@@ -56,13 +57,23 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 		// Get the VkDevice handle used in the rest of a Vulkan application
 		_device = vkbDevice.device;
 		/*volkLoadDevice(_device);*/
-		_chosenGPU = physicalDevice.physical_device;
+		_choosenGPU = physicalDevice.physical_device;
 
 		// use vkbootstrap to get a Graphics queue
 		_graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
 		_graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 		_computeQueue = vkbDevice.get_queue(vkb::QueueType::compute).value();
 		_computeQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::compute).value();
+
+		VmaAllocatorCreateInfo allocatorInfo = {
+			.physicalDevice = _choosenGPU,
+			.device = _device,
+			.preferredLargeHeapBlockSize = 0,
+			.instance = _instance,
+			.vulkanApiVersion = VK_API_VERSION_1_1
+		};
+		vmaCreateAllocator(&allocatorInfo, &_memoryAllocator);
+		_mainDeletionQueue.addDeletor([=]() {vmaDestroyAllocator(_memoryAllocator); });
 
 		_isInitialized = true;
 	} else {
@@ -71,7 +82,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 }
 
 void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
-	vkb::SwapchainBuilder swapchainBuilder{ _chosenGPU,_device,_surface };
+	vkb::SwapchainBuilder swapchainBuilder{ _choosenGPU,_device,_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
 		.use_default_format_selection()
@@ -223,12 +234,19 @@ void Lullaby::VKRenderer::initPipelines() {
 	const auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
 	LullabyHelpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_trianglePipelineLayout), "creating pipeline layout");
 
+	auto vertexInputInfo = PipelineBuilder::defaultVertexInputInfo();
+	auto vertexDescription = Vertex::getVertexDescription();
+	vertexInputInfo.pVertexBindingDescriptions = vertexDescription._bindings.data();
+	vertexInputInfo.vertexBindingDescriptionCount = vertexDescription._bindings.size();
+	vertexInputInfo.pVertexAttributeDescriptions = vertexDescription._attributes.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription._attributes.size();
+
 	PipelineInfo info{
 		._shaderStages = {
 			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader),
 			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
 		},
-		._vertexInputInfo = PipelineBuilder::defaultVertexInputInfo(),
+		._vertexInputInfo = vertexInputInfo,
 		._inputAssembly = PipelineBuilder::defaultInputAssemblyInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
 		._viewport = {
 			.x = .0f,
@@ -283,7 +301,7 @@ void Lullaby::VKRenderer::render() {
 	//make a clear-color from frame number. This will flash with a 120*pi frame period.
 	VkClearValue clearValue;
 	const float flash = abs(sin(_frameNumber++ / 120.f));
-	clearValue.color = { { flash, 0.0f, flash, 1.0f } };
+	clearValue.color = { { flash, 0.0f, 0.0f, 1.0f } };
 
 	//start the main renderpass.
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -303,7 +321,12 @@ void Lullaby::VKRenderer::render() {
 	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(_mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _trianglePipeline);
-	vkCmdDraw(_mainCommandBuffer, 3, 1, 0, 0);
+
+	//bind the mesh vertex buffer with offset 0
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_triangleMesh._vertexBuffer._buffer, &offset);
+
+	vkCmdDraw(_mainCommandBuffer, _triangleMesh._vertices.size(), 1, 0, 0);
 
 	//finalize the render pass
 	vkCmdEndRenderPass(_mainCommandBuffer);
@@ -340,6 +363,55 @@ void Lullaby::VKRenderer::render() {
 	};
 	LullabyHelpers::checkVulkanError(vkQueuePresentKHR(_graphicsQueue, &presentInfo), "presenting image");
 
+}
+
+void Lullaby::VKRenderer::sampleTriangle() {//make the array 3 vertices long
+	_triangleMesh._vertices.resize(3);
+
+	//vertex positions
+	_triangleMesh._vertices[0]._position = { 1.f, 1.f, 0.0f };
+	_triangleMesh._vertices[1]._position = { -1.f, 1.f, 0.0f };
+	_triangleMesh._vertices[2]._position = { 0.f,-1.f, 0.0f };
+
+	//vertex colors, all green
+	_triangleMesh._vertices[0]._color = { 0.f, 1.f, 0.0f }; //pure green
+	_triangleMesh._vertices[1]._color = { 0.f, 1.f, 0.0f }; //pure green
+	_triangleMesh._vertices[2]._color = { 0.f, 1.f, 0.0f }; //pure green
+
+	uploadGeometry(_triangleMesh);
+}
+
+void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {
+	//allocate vertex buffer
+	VkBufferCreateInfo bufferInfo = {
+		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+		.size = mesh._vertices.size() * sizeof(Vertex),
+		.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+	};
+
+	//let the VMA library know that this data should be writeable by CPU, but also readable by GPU
+	VmaAllocationCreateInfo vmaallocInfo = {
+		.usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
+	};
+
+	//allocate the buffer
+	LullabyHelpers::checkVulkanError(vmaCreateBuffer(_memoryAllocator, &bufferInfo, &vmaallocInfo,
+		&mesh._vertexBuffer._buffer,
+		&mesh._vertexBuffer._allocation,
+		nullptr), "creating a memory buffer in GPU");
+
+	//add the destruction of triangle mesh buffer to the deletion queue
+	_mainDeletionQueue.addDeletor([=]() {
+		vmaDestroyBuffer(_memoryAllocator, mesh._vertexBuffer._buffer, mesh._vertexBuffer._allocation);
+		});
+
+	void* data;
+	vmaMapMemory(_memoryAllocator, mesh._vertexBuffer._allocation, &data);
+
+	memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
+
+	vmaUnmapMemory(_memoryAllocator, mesh._vertexBuffer._allocation);
 }
 
 void Lullaby::VKRenderer::releaseResources() {

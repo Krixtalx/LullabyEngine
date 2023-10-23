@@ -110,13 +110,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\VMA\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
@@ -134,13 +134,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\vkBootstrap;$(SolutionDir)Dependencies\VMA\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)LullabyEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <OpenMPSupport>true</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
@@ -159,8 +159,9 @@
     </ClCompile>
     <ClCompile Include="Core\Camera\Camera.cpp" />
     <ClCompile Include="Core\Camera\CameraProjection.cpp" />
+    <ClCompile Include="Core\DataContainers\Mesh.cpp" />
     <ClCompile Include="Core\DeletionQueue.cpp" />
-    <ClCompile Include="Core\PipelineBuilder.cpp" />
+    <ClCompile Include="Core\Shaders\PipelineBuilder.cpp" />
     <ClCompile Include="Core\VKRenderer.cpp" />
     <ClCompile Include="Geometry\AABB.cpp" />
     <ClCompile Include="main.cpp" />
@@ -172,16 +173,19 @@
     <ClCompile Include="Core\VKInitializers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Dependencies\VMA\include\vk_mem_alloc.h" />
     <ClInclude Include="Core\Camera\Camera.h" />
     <ClInclude Include="Core\Camera\CameraProjection.h" />
+    <ClInclude Include="Core\DataContainers\Mesh.h" />
     <ClInclude Include="Core\DeletionQueue.h" />
-    <ClInclude Include="Core\PipelineBuilder.h" />
+    <ClInclude Include="Core\Shaders\PipelineBuilder.h" />
     <ClInclude Include="Core\VKInitializers.h" />
     <ClInclude Include="Core\VKRenderer.h" />
     <ClInclude Include="Geometry\AABB.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Core\DataContainers\Types.h" />
     <ClInclude Include="Utilities\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
