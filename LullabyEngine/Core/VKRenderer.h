@@ -5,6 +5,11 @@
 #include "vk_mem_alloc.h"
 #include "DataContainers/Mesh.h"
 
+struct MeshPushConstants {
+	glm::vec4 data;
+	glm::mat4 render_matrix;
+};
+
 namespace Lullaby {
 	class VKRenderer : public Singleton<VKRenderer> {
 		//Vulkan objects
@@ -39,8 +44,8 @@ namespace Lullaby {
 		VkFence _renderFence = nullptr;
 
 		//Pipelines
-		VkPipeline _trianglePipeline = nullptr;
-		VkPipelineLayout _trianglePipelineLayout = nullptr;
+		VkPipeline _meshPipeline = nullptr;
+		VkPipelineLayout _meshPipelineLayout = nullptr;
 
 		//Memory allocator
 		VmaAllocator _memoryAllocator = nullptr;
@@ -49,7 +54,7 @@ namespace Lullaby {
 		DeletionQueue _mainDeletionQueue;
 
 		//Sample model
-		Mesh _triangleMesh;
+		Mesh _sampleMesh;
 
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;

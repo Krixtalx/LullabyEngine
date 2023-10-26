@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PipelineBuilder.h"
 
-#include "..\VKInitializers.h"
+#include "../VKInitializers.h"
 
 VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass) {
 	//make viewport state from our stored viewport and scissor.

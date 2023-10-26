@@ -231,8 +231,22 @@ void Lullaby::VKRenderer::initPipelines() {
 	else
 		std::cerr << "Error when building the triangle fragment shader module" << std::endl;
 
-	const auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
-	LullabyHelpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_trianglePipelineLayout), "creating pipeline layout");
+	//we start from just the default empty pipeline layout info
+	auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
+
+	//setup push constants
+	VkPushConstantRange pushConstant{};
+	//this push constant range starts at the beginning
+	pushConstant.offset = 0;
+	//this push constant range takes up the size of a MeshPushConstants struct
+	pushConstant.size = sizeof(MeshPushConstants);
+	//this push constant range is accessible only in the vertex shader
+	pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	layoutInfo.pPushConstantRanges = &pushConstant;
+	layoutInfo.pushConstantRangeCount = 1;
+	
+	LullabyHelpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_meshPipelineLayout), "creating pipeline layout");
 
 	auto vertexInputInfo = PipelineBuilder::defaultVertexInputInfo();
 	auto vertexDescription = Vertex::getVertexDescription();
@@ -262,18 +276,18 @@ void Lullaby::VKRenderer::initPipelines() {
 		._rasterizer = PipelineBuilder::defaultRasterizationInfo(VK_POLYGON_MODE_FILL),
 		._colorBlendAttachment = PipelineBuilder::defaultColorBlendState(),
 		._multisampling = PipelineBuilder::defaultMultisampleInfo(),
-		._pipelineLayout = _trianglePipelineLayout
+		._pipelineLayout = _meshPipelineLayout
 	};
-	_trianglePipeline = PipelineBuilder::buildPipeline(info, _device, _mainRenderPass);
+	_meshPipeline = PipelineBuilder::buildPipeline(info, _device, _mainRenderPass);
 
 	vkDestroyShaderModule(_device, triangleVertexShader, nullptr);
 	vkDestroyShaderModule(_device, triangleFragShader, nullptr);
 	_mainDeletionQueue.addDeletor([=]() {
 		//destroy the 2 pipelines we have created
-		vkDestroyPipeline(_device, _trianglePipeline, nullptr);
+		vkDestroyPipeline(_device, _meshPipeline, nullptr);
 
 		//destroy the pipeline layout that they use
-		vkDestroyPipelineLayout(_device, _trianglePipelineLayout, nullptr);
+		vkDestroyPipelineLayout(_device, _meshPipelineLayout, nullptr);
 		});
 }
 
@@ -320,13 +334,13 @@ void Lullaby::VKRenderer::render() {
 
 	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(_mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _trianglePipeline);
+	vkCmdBindPipeline(_mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _meshPipeline);
 
 	//bind the mesh vertex buffer with offset 0
 	VkDeviceSize offset = 0;
-	vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_triangleMesh._vertexBuffer._buffer, &offset);
+	vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer._buffer, &offset);
 
-	vkCmdDraw(_mainCommandBuffer, _triangleMesh._vertices.size(), 1, 0, 0);
+	vkCmdDraw(_mainCommandBuffer, _sampleMesh._vertices.size(), 1, 0, 0);
 
 	//finalize the render pass
 	vkCmdEndRenderPass(_mainCommandBuffer);
@@ -366,19 +380,19 @@ void Lullaby::VKRenderer::render() {
 }
 
 void Lullaby::VKRenderer::sampleTriangle() {//make the array 3 vertices long
-	_triangleMesh._vertices.resize(3);
+	_sampleMesh._vertices.resize(3);
 
 	//vertex positions
-	_triangleMesh._vertices[0]._position = { 1.f, 1.f, 0.0f };
-	_triangleMesh._vertices[1]._position = { -1.f, 1.f, 0.0f };
-	_triangleMesh._vertices[2]._position = { 0.f,-1.f, 0.0f };
+	_sampleMesh._vertices[0]._position = { 1.f, 1.f, 0.0f };
+	_sampleMesh._vertices[1]._position = { -1.f, 1.f, 0.0f };
+	_sampleMesh._vertices[2]._position = { 0.f,-1.f, 0.0f };
 
 	//vertex colors, all green
-	_triangleMesh._vertices[0]._color = { 0.f, 1.f, 0.0f }; //pure green
-	_triangleMesh._vertices[1]._color = { 0.f, 1.f, 0.0f }; //pure green
-	_triangleMesh._vertices[2]._color = { 0.f, 1.f, 0.0f }; //pure green
+	_sampleMesh._vertices[0]._color = { 0.f, 1.f, 0.0f }; //pure green
+	_sampleMesh._vertices[1]._color = { 0.f, 1.f, 0.0f }; //pure green
+	_sampleMesh._vertices[2]._color = { 0.f, 1.f, 0.0f }; //pure green
 
-	uploadGeometry(_triangleMesh);
+	uploadGeometry(_sampleMesh);
 }
 
 void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {

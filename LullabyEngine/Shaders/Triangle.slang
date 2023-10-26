@@ -1,5 +1,4 @@
-struct Vertex
-{
+struct Vertex{
     [[vk::binding(0)]] float3 position : POSITION;
     [[vk::binding(0)]] float3 normal : NORMAL;
     [[vk::binding(0)]] float3 color : COLOR;
@@ -13,12 +12,25 @@ struct VertexStageOutput
     float3 color : FragmentColor;
 };
 
+struct PushConstants{
+    float4 data;
+    float4x4 renderMatrix;
+}
+[[vk::push_constant]]
+ConstantBuffer<PushConstants> pushConstantsBuffer;
+
+
+/*[[vk::push_constant]]
+cbuffer pushConstantsBuffer{
+    PushConstants data;
+} */
+
 [shader("vertex")]
-VertexStageOutput vertexMain(Vertex inputVertex)
+VertexStageOutput vertexMain(Vertex inputVertex, PushConstants pushConstants )
 {
     VertexStageOutput output;
 
-    output.sv_position = float4(inputVertex.position, 1);
+    output.sv_position = mul(pushConstants.renderMatrix, float4(inputVertex.position, 1));
     output.color = inputVertex.color;
     output.normal = inputVertex.normal;
 
