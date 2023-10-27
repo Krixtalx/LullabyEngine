@@ -340,6 +340,26 @@ void Lullaby::VKRenderer::render() {
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer._buffer, &offset);
 
+	//make a model view matrix for rendering the object
+	//camera position
+	glm::vec3 camPos = { 0.f,0.f,-2.f };
+
+	glm::mat4 view = glm::translate(glm::mat4(1.f), camPos);
+	//camera projection
+	glm::mat4 projection = glm::perspective(glm::radians(70.f), 1700.f / 900.f, 0.1f, 200.0f);
+	projection[1][1] *= -1;
+	//model rotation
+	glm::mat4 model = glm::rotate(glm::mat4{ 1.0f }, glm::radians(_frameNumber * 0.4f), glm::vec3(0, 1, 0));
+
+	//calculate final mesh matrix
+	glm::mat4 mesh_matrix = projection * view * model;
+
+	MeshPushConstants constants;
+	constants.render_matrix = mesh_matrix;
+
+	//upload the matrix to the GPU via push constants
+	vkCmdPushConstants(_mainCommandBuffer, _meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+
 	vkCmdDraw(_mainCommandBuffer, _sampleMesh._vertices.size(), 1, 0, 0);
 
 	//finalize the render pass
