@@ -46,7 +46,7 @@ VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, c
 	};
 
 	VkPipeline newPipeline = nullptr;
-	LullabyHelpers::checkVulkanError(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &newPipeline), "creating pipeline");
+	Helpers::checkVulkanError(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &newPipeline), "creating pipeline");
 	return newPipeline;
 
 }

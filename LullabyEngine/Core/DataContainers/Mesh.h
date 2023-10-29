@@ -22,5 +22,7 @@ namespace Lullaby {
 	public:
 		std::vector<Vertex> _vertices;
 		Types::AllocatedBuffer _vertexBuffer;
+
+		bool loadFromObj(const std::string& filename);
 	};
 }

@@ -53,11 +53,6 @@ tools/*
 *.md5anim
 *.md5mesh
 *.ply
-*.GEUCloud
-*.GEU
-*.GEUCamera
-*.GEULight
-*.GEUMesh
 *.bak
 *.TIF
 *.ini

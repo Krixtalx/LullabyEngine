@@ -53,8 +53,14 @@ namespace Lullaby {
 		//Deletion queue
 		DeletionQueue _mainDeletionQueue;
 
+		//Depth buffer
+		VkImageView _depthImageView = nullptr;
+		Types::AllocatedImage _depthImage;
+		VkFormat _depthFormat;
+
 		//Sample model
 		Mesh _sampleMesh;
+		Mesh _dragon;
 
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;
@@ -70,6 +76,7 @@ namespace Lullaby {
 		void render();
 
 		void sampleTriangle();
+		void sampleModel();
 		void uploadGeometry(Mesh& mesh);
 
 		void releaseResources();

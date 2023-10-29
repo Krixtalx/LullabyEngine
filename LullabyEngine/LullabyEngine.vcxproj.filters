@@ -143,6 +143,9 @@
     <ClInclude Include="Core\DataContainers\Mesh.h">
       <Filter>Archivos de encabezado\Core\DataContainers</Filter>
     </ClInclude>
+    <ClInclude Include="..\Dependencies\tinyobjloader\tiny_obj_loader.h">
+      <Filter>Archivos de encabezado\Dependencies</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LullabyEngine.rc">
