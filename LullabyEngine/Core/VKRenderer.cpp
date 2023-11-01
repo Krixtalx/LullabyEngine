@@ -134,7 +134,7 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 	_mainDeletionQueue.addDeletor([=]() {
 		vkDestroyImageView(_device, _depthImageView, nullptr);
 		vmaDestroyImage(_memoryAllocator, _depthImage._image, _depthImage._allocation);
-	});
+		});
 }
 
 void Lullaby::VKRenderer::initCommands() {
@@ -160,25 +160,25 @@ void Lullaby::VKRenderer::initCommands() {
 
 void Lullaby::VKRenderer::initFramebuffers() {
 	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
-	VkFramebufferCreateInfo fb_info = {
+	VkFramebufferCreateInfo fbInfo = {
 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-		.pNext = nullptr
+		.pNext = nullptr,
+		.renderPass = _mainRenderPass,
+		.attachmentCount = 2,
+		.width = _renderResolution.x,
+		.height = _renderResolution.y,
+		.layers = 1
 	};
 
-	fb_info.renderPass = _mainRenderPass;
-	fb_info.attachmentCount = 1;
-	fb_info.width = _renderResolution.x;
-	fb_info.height = _renderResolution.y;
-	fb_info.layers = 1;
-
 	//grab how many images we have in the swapchain
-	const uint32_t swapchain_imagecount = _swapchainImages.size();
-	_framebuffers = std::vector<VkFramebuffer>(swapchain_imagecount);
+	const uint32_t swapchainImageCount = _swapchainImages.size();
+	_framebuffers = std::vector<VkFramebuffer>(swapchainImageCount);
 
 	//create framebuffers for each of the swapchain image views
-	for (int i = 0; i < swapchain_imagecount; i++) {
-		fb_info.pAttachments = &_swapchainImageViews[i];
-		Lullaby::Helpers::checkVulkanError(vkCreateFramebuffer(_device, &fb_info, nullptr, &_framebuffers[i]), "creating a framebuffer");
+	for (int i = 0; i < swapchainImageCount; i++) {
+		VkImageView attachments[2] = { _swapchainImageViews[i], _depthImageView };
+		fbInfo.pAttachments = attachments;
+		Lullaby::Helpers::checkVulkanError(vkCreateFramebuffer(_device, &fbInfo, nullptr, &_framebuffers[i]), "creating a framebuffer");
 		_mainDeletionQueue.addDeletor([=]() {
 			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
 			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
@@ -188,32 +188,84 @@ void Lullaby::VKRenderer::initFramebuffers() {
 }
 
 void Lullaby::VKRenderer::initDefaultRenderpass() {
-	// the renderpass will use this color attachment.
-	const auto colorAttachment = Lullaby::Helpers::createAttachmentDescription(
-		_swapchainImageFormat, //the attachment will have the format needed by the swapchain
-		VK_SAMPLE_COUNT_1_BIT, //1 sample, we won't be doing MSAA for now
-		VK_ATTACHMENT_LOAD_OP_CLEAR, // we Clear when this attachment is loaded
-		VK_ATTACHMENT_STORE_OP_STORE, // we keep the attachment stored when the renderpass ends
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, //we don't care about stencil		
-		VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		VK_IMAGE_LAYOUT_UNDEFINED, //we don't know nor care about the starting layout of the attachment
-		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR); //after the renderpass ends, the image has to be on a layout ready for display
+	// the renderpass will use this color attachment.		
+	const VkAttachmentDescription colorAttachment = {
+		.format = _swapchainImageFormat, //the attachment will have the format needed by the swapchain
+		.samples = VK_SAMPLE_COUNT_1_BIT,//1 sample, we won't be doing MSAA for now
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // we Clear when this attachment is loaded
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE, // we keep the attachment stored when the renderpass ends
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE, //we don't care about stencil	
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, //we don't know nor care about the starting layout of the attachment
+		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR //after the renderpass ends, the image has to be on a layout ready for display
+	};
 
-	VkAttachmentReference color_attachment_ref = {
+	const VkAttachmentReference colorAttachmentRef = {
 		//attachment number will index into the pAttachments array in the parent renderpass itself
 		.attachment = 0,
 		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	};
 
-	//we are going to create 1 subpass, which is the minimum you can do
+	// Depth render pass description.
+	const VkAttachmentDescription depthAttachment{
+		.flags = 0,
+		.format = _depthFormat,
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	};
+
+	const VkAttachmentReference depthAttachmentRef = {
+		//attachment number will index into the pAttachments array in the parent renderpass itself
+		.attachment = 1,
+		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	};
+
+
 	VkSubpassDescription subpass = {
 		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
 		.colorAttachmentCount = 1,
-		.pColorAttachments = &color_attachment_ref
+		.pColorAttachments = &colorAttachmentRef,
+		.pDepthStencilAttachment = &depthAttachmentRef
+	};
+	//array of 2 attachments, one for the color, and other for depth
+	VkAttachmentDescription attachments[2] = { colorAttachment, depthAttachment };
+
+	VkSubpassDependency colorDependency = {
+		.srcSubpass = VK_SUBPASS_EXTERNAL,
+		.dstSubpass = 0,
+		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
 	};
 
-	const auto renderPassInfo = Lullaby::Helpers::createRenderPassInfo(1, &colorAttachment, 1, &subpass);
-	Lullaby::Helpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
+	VkSubpassDependency depthDependency = {
+		.srcSubpass = VK_SUBPASS_EXTERNAL,
+		.dstSubpass = 0,
+		.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+	};
+
+	VkSubpassDependency dependencies[2] = { colorDependency, depthDependency };
+
+	const VkRenderPassCreateInfo renderPassInfo{
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		.attachmentCount = 2,
+		.pAttachments = attachments,
+		.subpassCount = 1,
+		.pSubpasses = &subpass,
+		.dependencyCount = 2,
+		.pDependencies = dependencies
+	};
+
+	Helpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
 
 	_mainDeletionQueue.addDeletor([=]() {
 		vkDestroyRenderPass(_device, _mainRenderPass, nullptr);
@@ -308,6 +360,7 @@ void Lullaby::VKRenderer::initPipelines() {
 		},
 		._rasterizer = PipelineBuilder::defaultRasterizationInfo(VK_POLYGON_MODE_FILL),
 		._colorBlendAttachment = PipelineBuilder::defaultColorBlendState(),
+		._depthStencil = Helpers::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL),
 		._multisampling = PipelineBuilder::defaultMultisampleInfo(),
 		._pipelineLayout = _meshPipelineLayout
 	};
@@ -345,8 +398,13 @@ void Lullaby::VKRenderer::render() {
 
 	Lullaby::Helpers::checkVulkanError(vkBeginCommandBuffer(_mainCommandBuffer, &cmdBeginInfo), "beginning command buffer recording");
 
-	VkClearValue clearValue;
-	clearValue.color = { { 0.05f, 0.05f, 0.05f, 1.0f } };
+	VkClearValue clearColor;
+	clearColor.color = { { 0.05f, 0.05f, 0.05f, 1.0f } };
+
+	VkClearValue clearDepth;
+	clearDepth.depthStencil.depth = 1.f;
+
+	VkClearValue clears[2] = { clearColor, clearDepth };
 
 	//start the main renderpass.
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -359,8 +417,8 @@ void Lullaby::VKRenderer::render() {
 			.offset = {0,0},
 			.extent = {_renderResolution.x, _renderResolution.y}
 		},
-		.clearValueCount = 1,
-		.pClearValues = &clearValue
+		.clearValueCount = 2,
+		.pClearValues = clears,
 	};
 
 	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -369,7 +427,7 @@ void Lullaby::VKRenderer::render() {
 
 	//make a model view matrix for rendering the object
 	//camera position
-	glm::vec3 camPos = { 0.f,0.f,-2.f };
+	glm::vec3 camPos = { 0.f,-5.f,-20.f };
 
 	glm::mat4 view = glm::translate(glm::mat4(1.f), camPos);
 	//camera projection
@@ -449,7 +507,7 @@ void Lullaby::VKRenderer::sampleTriangle() {//make the array 3 vertices long
 }
 
 void Lullaby::VKRenderer::sampleModel() {
-	_dragon.loadFromObj("../Assets/Models/monkey_smooth.obj");
+	_dragon.loadFromObj("../Assets/Models/Dragon.obj");
 	uploadGeometry(_dragon);
 }
 

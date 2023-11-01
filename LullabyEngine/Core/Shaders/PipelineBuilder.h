@@ -9,6 +9,7 @@ namespace Lullaby {
 		VkRect2D										_scissor;
 		VkPipelineRasterizationStateCreateInfo			_rasterizer;
 		VkPipelineColorBlendAttachmentState				_colorBlendAttachment;
+		VkPipelineDepthStencilStateCreateInfo			_depthStencil;
 		VkPipelineMultisampleStateCreateInfo			_multisampling;
 		VkPipelineLayout								_pipelineLayout;
 	};

@@ -22,35 +22,8 @@ VkCommandBufferAllocateInfo Lullaby::Helpers::commandBufferAllocateInfo(const Vk
 	return info;
 }
 
-VkAttachmentDescription Lullaby::Helpers::createAttachmentDescription(const VkFormat& format, const VkSampleCountFlagBits& samples, const VkAttachmentLoadOp& loadOp, const VkAttachmentStoreOp& storeOp, const VkAttachmentLoadOp& stencilLoadOp, const VkAttachmentStoreOp& stencilStoreOp, const VkImageLayout& initialLayout, const VkImageLayout& finalLayout) {
-	const VkAttachmentDescription attDesc = {
-		.format = format,
-		.samples = samples,
-		.loadOp = loadOp,
-		.storeOp = storeOp,
-		.stencilLoadOp = stencilLoadOp,
-		.stencilStoreOp = stencilStoreOp,
-		.initialLayout = initialLayout,
-		.finalLayout = finalLayout
-	};
-	return attDesc;
-}
-
-VkRenderPassCreateInfo Lullaby::Helpers::createRenderPassInfo(uint32_t attachmentCount, const VkAttachmentDescription* pAttachments, uint32_t subpassCount, const VkSubpassDescription* pSubpasses, const VkStructureType& sType, uint32_t dependencyCount, const VkSubpassDependency* pDependencies) {
-	const VkRenderPassCreateInfo renderPassInfo = {
-		.sType = sType,
-		.attachmentCount = attachmentCount,
-		.pAttachments = pAttachments,
-		.subpassCount = subpassCount,
-		.pSubpasses = pSubpasses,
-		.dependencyCount = dependencyCount,
-		.pDependencies = pDependencies
-	};
-	return renderPassInfo;
-}
-
 VkImageCreateInfo Lullaby::Helpers::imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
-	VkImageCreateInfo info{
+	const VkImageCreateInfo info{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.pNext = nullptr,
 		.imageType = VK_IMAGE_TYPE_2D,
@@ -67,7 +40,7 @@ VkImageCreateInfo Lullaby::Helpers::imageCreateInfo(VkFormat format, VkImageUsag
 
 VkImageViewCreateInfo Lullaby::Helpers::imageViewCreateInfo(VkFormat format, VkImage image,
 	VkImageAspectFlags aspectFlags) {
-	VkImageViewCreateInfo info{
+	const VkImageViewCreateInfo info{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.pNext = nullptr,
 		.image = image,
@@ -80,6 +53,22 @@ VkImageViewCreateInfo Lullaby::Helpers::imageViewCreateInfo(VkFormat format, VkI
 			.baseArrayLayer = 0,
 			.layerCount = 1
 		}
+	};
+	return info;
+}
+
+VkPipelineDepthStencilStateCreateInfo Lullaby::Helpers::depthStencilCreateInfo(bool doDepthTest, bool depthWrite,
+	VkCompareOp compareOp) {
+	VkPipelineDepthStencilStateCreateInfo info = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+		.pNext = nullptr,
+		.depthTestEnable = doDepthTest ? VK_TRUE : VK_FALSE,
+		.depthWriteEnable = depthWrite ? VK_TRUE : VK_FALSE,
+		.depthCompareOp = doDepthTest ? compareOp : VK_COMPARE_OP_ALWAYS,
+		.depthBoundsTestEnable = VK_FALSE,
+		.stencilTestEnable = VK_FALSE,
+		.minDepthBounds = 0.0f,
+		.maxDepthBounds = 1.0f
 	};
 	return info;
 }

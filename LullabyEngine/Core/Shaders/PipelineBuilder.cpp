@@ -38,6 +38,7 @@ VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, c
 		.pViewportState = &viewportState,
 		.pRasterizationState = &pipelineInfo._rasterizer,
 		.pMultisampleState = &pipelineInfo._multisampling,
+		.pDepthStencilState = &pipelineInfo._depthStencil,
 		.pColorBlendState = &colorBlending,
 		.layout = pipelineInfo._pipelineLayout,
 		.renderPass = renderPass,
