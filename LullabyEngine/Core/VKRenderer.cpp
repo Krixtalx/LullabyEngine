@@ -77,7 +77,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 
 		_isInitialized = true;
 	} else {
-		std::cout << "Renderer already initialized!" << std::endl;
+		fmt::print(fg(fmt::color::yellow), "Renderer already initialized!\n");
 	}
 }
 
@@ -303,18 +303,18 @@ void Lullaby::VKRenderer::initPipelines() {
 		_device, "Shaders/TriangleVertex.spv");
 
 	if (triangleVertexShader)
-		std::cout << "Triangle vertex shader successfully loaded" << std::endl;
+		fmt::print(fg(fmt::color::green), "Triangle vertex shader successfully loaded!\n");
 	else
-		std::cerr << "Error when building the triangle vertex shader module" << std::endl;
+		fmt::print(stderr, fg(fmt::color::red), "Error when building the triangle vertex shader module\n");
 
 
 	const VkShaderModule triangleFragShader = PipelineBuilder::loadShaderModule(
 		_device, "Shaders/TriangleFragment.spv");
 
 	if (triangleFragShader)
-		std::cout << "Triangle fragment shader successfully loaded" << std::endl;
+		fmt::print(fg(fmt::color::green), "Triangle fragment shader successfully loaded!\n");
 	else
-		std::cerr << "Error when building the triangle fragment shader module" << std::endl;
+		fmt::print(stderr, fg(fmt::color::red), "Error when building the triangle fragment shader module\n");
 
 	//we start from just the default empty pipeline layout info
 	auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
@@ -557,7 +557,7 @@ void Lullaby::VKRenderer::releaseResources() {
 		vkb::destroy_debug_utils_messenger(_instance, _debugMesseger);
 		vkDestroyInstance(_instance, nullptr);
 	} else {
-		std::cout << "The renderer is not initialized, so you can't release resources" << std::endl;
+		fmt::print(fg(fmt::color::yellow), "The renderer is not initialized, so you can't release resources\n");
 	}
 }
 

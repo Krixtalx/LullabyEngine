@@ -7,8 +7,9 @@
 
 #include <vector>
 #include <memory>
-#include <iostream>
 #include <fstream>
+#include "fmt/core.h"
+#include "fmt/color.h"
 
 //#include "Volk/volk.h"
 #include "vulkan/vulkan.h"

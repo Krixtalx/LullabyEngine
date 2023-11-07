@@ -38,6 +38,7 @@ x86/*
 */x86/*
 packages/*
 tools/*
+vcpkg_installed/*
 *.pdb
 *.tlog
 

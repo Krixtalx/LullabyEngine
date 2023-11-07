@@ -59,7 +59,7 @@ bool Lullaby::Mesh::loadFromObj(const std::string& filename) {
 	//if we have any error, print it to the console, and break the mesh loading.
 	//This happens if the file can't be found or is malformed
 	if (!err.empty()) {
-		std::cerr << err << std::endl;
+		fmt::print(fg(fmt::color::red), "{}\n", err);
 	}
 
 	if (!ret)

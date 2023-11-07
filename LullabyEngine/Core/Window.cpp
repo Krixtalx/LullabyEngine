@@ -47,7 +47,7 @@ void Lullaby::Window::init(const std::string& title, int width, int height, cons
 	_renderer->initSyncStructures();
 	_renderer->initPipelines();
 	_renderer->sampleModel();
-	std::cout << "Lullaby renderer initialized" << std::endl;
+	fmt::print(fg(fmt::color::aqua), "Lullaby renderer initialized\n");
 }
 
 void Lullaby::Window::renderLoop() const {
