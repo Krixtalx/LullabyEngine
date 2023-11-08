@@ -3,7 +3,7 @@
 
 int main() {
 	const auto setup = Lullaby::Window::getInstance();
-	fmt::print(fg(fmt::color::aqua), "Starting Lullaby Engine...\n");
+	fmt::print(fg(fmt::color::aquamarine), "Starting Lullaby Engine...\n");
 
 	try {
 		setup->init();
@@ -11,6 +11,6 @@ int main() {
 	} catch (const std::exception& exception) {
 		fmt::print(stderr, fg(fmt::color::red), "{}\n", exception.what());
 	}
-	fmt::print(fg(fmt::color::aqua), "Closing Lullaby Engine...\n");
+	fmt::print(fg(fmt::color::aquamarine), "Closing Lullaby Engine...\n");
 	return 0;
 }
