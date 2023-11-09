@@ -81,7 +81,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 	}
 }
 
-void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
+void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize, bool addDeletors) {
 	vkb::SwapchainBuilder swapchainBuilder{ _choosenGPU,_device,_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -99,9 +99,10 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 
 	_swapchainImageFormat = vkbSwapchain.image_format;
 	_renderResolution = { vkbSwapchain.extent.width, vkbSwapchain.extent.height };
-	_mainDeletionQueue.addDeletor([=]() {
+	if (addDeletors)
+		_mainDeletionQueue.addDeletor([&]() {
 		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
-		});
+			});
 
 	//depth image size will match the window
 	VkExtent3D depthImageExtent = {
@@ -131,10 +132,11 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize) {
 	Helpers::checkVulkanError(vkCreateImageView(_device, &imgViewInfo, nullptr, &_depthImageView), "creating an image view");
 
 	//add to deletion queue
-	_mainDeletionQueue.addDeletor([=]() {
+	if (addDeletors)
+		_mainDeletionQueue.addDeletor([&]() {
 		vkDestroyImageView(_device, _depthImageView, nullptr);
 		vmaDestroyImage(_memoryAllocator, _depthImage._image, _depthImage._allocation);
-		});
+			});
 }
 
 void Lullaby::VKRenderer::initCommands() {
@@ -158,7 +160,7 @@ void Lullaby::VKRenderer::initCommands() {
 		});
 }
 
-void Lullaby::VKRenderer::initFramebuffers() {
+void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
 	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
 	VkFramebufferCreateInfo fbInfo = {
 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -179,10 +181,11 @@ void Lullaby::VKRenderer::initFramebuffers() {
 		VkImageView attachments[2] = { _swapchainImageViews[i], _depthImageView };
 		fbInfo.pAttachments = attachments;
 		Lullaby::Helpers::checkVulkanError(vkCreateFramebuffer(_device, &fbInfo, nullptr, &_framebuffers[i]), "creating a framebuffer");
-		_mainDeletionQueue.addDeletor([=]() {
+		if (addDeletors)
+			_mainDeletionQueue.addDeletor([&]() {
 			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
 			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
-			});
+				});
 	}
 
 }
@@ -225,13 +228,13 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 	};
 
-
 	VkSubpassDescription subpass = {
 		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
 		.colorAttachmentCount = 1,
 		.pColorAttachments = &colorAttachmentRef,
 		.pDepthStencilAttachment = &depthAttachmentRef
 	};
+
 	//array of 2 attachments, one for the color, and other for depth
 	VkAttachmentDescription attachments[2] = { colorAttachment, depthAttachment };
 
@@ -542,6 +545,22 @@ void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {
 	memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
 
 	vmaUnmapMemory(_memoryAllocator, mesh._vertexBuffer._allocation);
+}
+
+void Lullaby::VKRenderer::resizeCallback(GLFWwindow* window, int width, int height) {
+	if (_swapchain) {
+		for (int i = 0; i < _swapchainImageViews.size(); i++) {
+			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
+			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
+		}
+		vkDestroyImageView(_device, _depthImageView, nullptr);
+		vmaDestroyImage(_memoryAllocator, _depthImage._image, _depthImage._allocation);
+		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+		_renderResolution.x = width;
+		_renderResolution.y = height;
+		initSwapchain({ width, height }, false);
+		initFramebuffers(false);
+	}
 }
 
 void Lullaby::VKRenderer::releaseResources() {

@@ -31,14 +31,8 @@
     <Filter Include="Archivos de origen\Core\Camera">
       <UniqueIdentifier>{b5886264-5f4a-4c86-a857-1f2273a4c61d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Archivos de encabezado\UI">
-      <UniqueIdentifier>{6e84aff7-c956-4720-8c8c-8e292c931eba}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Archivos de encabezado\Utilities">
       <UniqueIdentifier>{08e3713d-0bc3-40dc-8beb-ff41f26d94dd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Archivos de origen\UI">
-      <UniqueIdentifier>{c061bd83-3bdb-40ac-b0de-2f7e731b7b8a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Archivos de origen\Utilities">
       <UniqueIdentifier>{f2fb444f-c9e7-43e7-936e-a7231435d803}</UniqueIdentifier>

@@ -11,6 +11,7 @@ namespace Lullaby {
 		VKRenderer* _renderer;
 		GLFWwindow* _window;
 		bool _isHeadless = false;
+		const bool _disableTitleBar = true;
 
 		Window();
 		void releaseResources();

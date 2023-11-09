@@ -66,9 +66,9 @@ namespace Lullaby {
 		uint64_t _frameNumber = 0;
 	public:
 		void initRenderer(GLFWwindow* window);
-		void initSwapchain(ivec2 windowSize);
+		void initSwapchain(ivec2 windowSize, bool addDeletors = true);
 		void initCommands();
-		void initFramebuffers();
+		void initFramebuffers(bool addDeletors = true);
 		void initDefaultRenderpass();
 		void initSyncStructures();
 		void initPipelines();
@@ -79,6 +79,7 @@ namespace Lullaby {
 		void sampleModel();
 		void uploadGeometry(Mesh& mesh);
 
+		void resizeCallback(GLFWwindow* window, int width, int height);
 		void releaseResources();
 		virtual ~VKRenderer();
 	};
