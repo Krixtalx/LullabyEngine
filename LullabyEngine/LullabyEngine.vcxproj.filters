@@ -131,9 +131,6 @@
     <ClInclude Include="Core\DataContainers\Types.h">
       <Filter>Archivos de encabezado\Core\DataContainers</Filter>
     </ClInclude>
-    <ClInclude Include="..\Dependencies\VMA\include\vk_mem_alloc.h">
-      <Filter>Archivos de encabezado\Dependencies</Filter>
-    </ClInclude>
     <ClInclude Include="Core\DataContainers\Mesh.h">
       <Filter>Archivos de encabezado\Core\DataContainers</Filter>
     </ClInclude>

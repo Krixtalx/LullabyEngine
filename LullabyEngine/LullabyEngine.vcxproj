@@ -177,7 +177,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Dependencies\tinyobjloader\tiny_obj_loader.h" />
-    <ClInclude Include="..\Dependencies\VMA\include\vk_mem_alloc.h" />
     <ClInclude Include="Core\Camera\Camera.h" />
     <ClInclude Include="Core\Camera\CameraProjection.h" />
     <ClInclude Include="Core\DataContainers\Mesh.h" />

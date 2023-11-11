@@ -7,8 +7,7 @@ namespace Lullaby::Types {
 		VmaAllocation _allocation = nullptr;
 	};
 
-	struct AllocatedImage
-	{
+	struct AllocatedImage{
 		VkImage _image = nullptr;
 		VmaAllocation _allocation = nullptr;
 	};

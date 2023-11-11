@@ -84,7 +84,7 @@ void disableTitlebar(GLFWwindow* window) {
 
 	original_proc = (WNDPROC)GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 	SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc));
-	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE);
+	SetWindowPos(hWnd, nullptr, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE);
 }
 
 Lullaby::Window::Window() : _window(nullptr) {
