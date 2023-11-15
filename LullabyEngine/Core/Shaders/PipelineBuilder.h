@@ -15,8 +15,8 @@ namespace Lullaby {
 	};
 
 	class PipelineBuilder final {
-		PipelineBuilder() = default;
-		virtual ~PipelineBuilder() = default;
+		PipelineBuilder();
+		~PipelineBuilder();
 
 	public:
 		static VkPipeline buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass);

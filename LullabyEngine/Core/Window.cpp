@@ -129,7 +129,7 @@ void Lullaby::Window::init(const std::string& title, int width, int height, cons
 		}
 		if (_disableTitleBar)
 			disableTitlebar(_window);
-		//glfwSetWindowSizeCallback(_window, );
+		glfwSetWindowSizeCallback(_window, VKRenderer::resizeCallback);
 	}
 	_renderer->initRenderer(_window);
 	if (!headless)

@@ -8,5 +8,5 @@ namespace Lullaby::Helpers {
 	VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags);
 	VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool doDepthTest, bool depthWrite, VkCompareOp compareOp);
 
-	void checkVulkanError(VkResult result, const std::string& when, const std::source_location& location = std::source_location::current());
+	void checkVulkanError(const vk::Result result, const std::string& when, const std::source_location& location = std::source_location::current());
 }

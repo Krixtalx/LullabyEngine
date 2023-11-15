@@ -4,7 +4,7 @@
 #include "Shaders\PipelineBuilder.h"
 #include "VKInitializers.h"
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include "vk_mem_alloc.hpp"
 
 void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 	if (!_isInitialized) {
@@ -35,8 +35,9 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 
 		if (window) {
 			// get the surface of the window we opened with GLFW
-			glfwCreateWindowSurface(_instance, window, nullptr, &_surface);
-
+			VkSurfaceKHR surface;
+			glfwCreateWindowSurface(_instance, window, nullptr, &surface);
+			_surface = surface;
 			physicalDevice = selector
 				.set_minimum_version(1, 1)
 				.set_surface(_surface)
@@ -65,14 +66,14 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 		_computeQueue = vkbDevice.get_queue(vkb::QueueType::compute).value();
 		_computeQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::compute).value();
 
-		VmaAllocatorCreateInfo allocatorInfo = {
+		vma::AllocatorCreateInfo allocatorInfo = {
 			.physicalDevice = _choosenGPU,
 			.device = _device,
 			.preferredLargeHeapBlockSize = 0,
 			.instance = _instance,
 			.vulkanApiVersion = VK_API_VERSION_1_1
 		};
-		vmaCreateAllocator(&allocatorInfo, &_memoryAllocator);
+		vma::createAllocator(&allocatorInfo, &_memoryAllocator);
 		_mainDeletionQueue.addDeletor([=]() {vmaDestroyAllocator(_memoryAllocator); });
 
 		_isInitialized = true;
@@ -94,10 +95,21 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize, bool addDeletors
 
 	//store swapchain and its related images
 	_swapchain = vkbSwapchain.swapchain;
-	_swapchainImages = vkbSwapchain.get_images().value();
-	_swapchainImageViews = vkbSwapchain.get_image_views().value();
+	auto tempSwapchainImgs = vkbSwapchain.get_images().value();
+	_swapchainImages.clear();
+	_swapchainImages.reserve(tempSwapchainImgs.size());
+	for (auto& img : tempSwapchainImgs) {
+		_swapchainImages.push_back(img);
+	}
 
-	_swapchainImageFormat = vkbSwapchain.image_format;
+	auto tempSwapchainImgViews = vkbSwapchain.get_image_views().value();
+	_swapchainImageViews.clear();
+	_swapchainImageViews.reserve(tempSwapchainImgViews.size());
+	for (auto& imgView : tempSwapchainImgViews) {
+		_swapchainImageViews.push_back(imgView);
+	}
+
+	_swapchainImageFormat = vk::Format(vkbSwapchain.image_format);
 	_renderResolution = { vkbSwapchain.extent.width, vkbSwapchain.extent.height };
 	if (addDeletors)
 		_mainDeletionQueue.addDeletor([&]() {
@@ -105,31 +117,54 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize, bool addDeletors
 			});
 
 	//depth image size will match the window
-	VkExtent3D depthImageExtent = {
+	vk::Extent3D depthImageExtent = {
 		.width = _renderResolution.x,
 		.height = _renderResolution.y,
 		.depth = 1
 	};
 
 	//hardcoding the depth format to 32 bit float
-	_depthFormat = VK_FORMAT_D32_SFLOAT;
-
+	_depthFormat = vk::Format::eD32Sfloat;
 	//the depth image will be an image with the format we selected and Depth Attachment usage flag
-	VkImageCreateInfo imgInfo = Lullaby::Helpers::imageCreateInfo(_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
+	const vk::ImageCreateInfo imgInfo{
+		.sType = vk::StructureType::eImageCreateInfo,
+		.pNext = nullptr,
+		.imageType = vk::ImageType::e2D,
+		.format = _depthFormat,
+		.extent = depthImageExtent,
+		.mipLevels = 1,
+		.arrayLayers = 1,
+		.samples = vk::SampleCountFlagBits::e1,
+		.tiling = vk::ImageTiling::eOptimal,
+		.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+	};
 
 	//for the depth image, we want to allocate it from GPU local memory
-	VmaAllocationCreateInfo imgAllocInfo = {
-		.usage = VMA_MEMORY_USAGE_GPU_ONLY,
-		.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+	vma::AllocationCreateInfo imgAllocInfo = {
+		.usage = vma::MemoryUsage::eAuto,
+		.requiredFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
 	//allocate and create the image
-	vmaCreateImage(_memoryAllocator, &imgInfo, &imgAllocInfo, &_depthImage._image, &_depthImage._allocation, nullptr);
+	_memoryAllocator.createImage(&imgInfo, &imgAllocInfo, &_depthImage._image, &_depthImage._allocation, nullptr);
 
 	//build an image-view for the depth image to use for rendering
-	VkImageViewCreateInfo imgViewInfo = Helpers::imageViewCreateInfo(_depthFormat, _depthImage._image, VK_IMAGE_ASPECT_DEPTH_BIT);
+	const vk::ImageViewCreateInfo imgViewInfo{
+		.sType = vk::StructureType::eImageViewCreateInfo,
+		.pNext = nullptr,
+		.image = _depthImage._image,
+		.viewType = vk::ImageViewType::e2D,
+		.format = _depthFormat,
+		.subresourceRange = {
+			.aspectMask = vk::ImageAspectFlagBits::eDepth,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
+	};
 
-	Helpers::checkVulkanError(vkCreateImageView(_device, &imgViewInfo, nullptr, &_depthImageView), "creating an image view");
+	Helpers::checkVulkanError(_device.createImageView(&imgViewInfo, nullptr, &_depthImageView), "creating an image view");
 
 	//add to deletion queue
 	if (addDeletors)
@@ -143,27 +178,38 @@ void Lullaby::VKRenderer::initCommands() {
 	//create a command pool for commands submitted to the graphics queue.
 	//the command pool will be one that can submit graphics commands
 	//we also want the pool to allow for resetting of individual command buffers
-	const auto commandPoolInfo = Lullaby::Helpers::commandPoolCreateInfo(_graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	const vk::CommandPoolCreateInfo commandPoolInfo = {
+		.sType = vk::StructureType::eCommandPoolCreateInfo,
+		.pNext = nullptr,
+		.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+		.queueFamilyIndex = _graphicsQueueFamily
+	};
 
 	//Create graphics command pool
-	Lullaby::Helpers::checkVulkanError(vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_graphicsCommandPool), "creating command pool");
+	Helpers::checkVulkanError(_device.createCommandPool(&commandPoolInfo, nullptr, &_graphicsCommandPool), "creating command pool");
 
 	//allocate the default command buffer that we will use for rendering
 	//commands will be made from our _graphicsCommandPool
 	//we will allocate 1 command buffer
 	// command level is Primary
-	const auto commandAllocInfo = Lullaby::Helpers::commandBufferAllocateInfo(_graphicsCommandPool);
+	const vk::CommandBufferAllocateInfo commandAllocInfo = {
+		.sType = vk::StructureType::eCommandBufferAllocateInfo,
+		.pNext = nullptr,
+		.commandPool = _graphicsCommandPool,
+		.level = vk::CommandBufferLevel::ePrimary,
+		.commandBufferCount = 1
+	};
 
-	Lullaby::Helpers::checkVulkanError(vkAllocateCommandBuffers(_device, &commandAllocInfo, &_mainCommandBuffer), "creating command buffer");
+	Helpers::checkVulkanError(_device.allocateCommandBuffers(&commandAllocInfo, &_mainCommandBuffer), "creating command buffer");
 	_mainDeletionQueue.addDeletor([=]() {
-		vkDestroyCommandPool(_device, _graphicsCommandPool, nullptr);
+		_device.destroyCommandPool(_graphicsCommandPool);
 		});
 }
 
 void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
 	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
-	VkFramebufferCreateInfo fbInfo = {
-		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+	vk::FramebufferCreateInfo fbInfo = {
+		.sType = vk::StructureType::eFramebufferCreateInfo,
 		.pNext = nullptr,
 		.renderPass = _mainRenderPass,
 		.attachmentCount = 2,
@@ -174,17 +220,17 @@ void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
 
 	//grab how many images we have in the swapchain
 	const uint32_t swapchainImageCount = _swapchainImages.size();
-	_framebuffers = std::vector<VkFramebuffer>(swapchainImageCount);
+	_framebuffers = std::vector<vk::Framebuffer>(swapchainImageCount);
 
 	//create framebuffers for each of the swapchain image views
 	for (int i = 0; i < swapchainImageCount; i++) {
-		VkImageView attachments[2] = { _swapchainImageViews[i], _depthImageView };
+		vk::ImageView attachments[2] = { _swapchainImageViews[i], _depthImageView };
 		fbInfo.pAttachments = attachments;
-		Lullaby::Helpers::checkVulkanError(vkCreateFramebuffer(_device, &fbInfo, nullptr, &_framebuffers[i]), "creating a framebuffer");
+		Helpers::checkVulkanError(_device.createFramebuffer(&fbInfo, nullptr, &_framebuffers[i]), "creating a framebuffer");
 		if (addDeletors)
 			_mainDeletionQueue.addDeletor([&]() {
-			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
-			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
+			_device.destroyFramebuffer(_framebuffers[i]);
+			_device.destroyImageView(_swapchainImageViews[i]);
 				});
 	}
 
@@ -192,74 +238,73 @@ void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
 
 void Lullaby::VKRenderer::initDefaultRenderpass() {
 	// the renderpass will use this color attachment.		
-	const VkAttachmentDescription colorAttachment = {
+	const vk::AttachmentDescription colorAttachment = {
 		.format = _swapchainImageFormat, //the attachment will have the format needed by the swapchain
-		.samples = VK_SAMPLE_COUNT_1_BIT,//1 sample, we won't be doing MSAA for now
-		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // we Clear when this attachment is loaded
-		.storeOp = VK_ATTACHMENT_STORE_OP_STORE, // we keep the attachment stored when the renderpass ends
-		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE, //we don't care about stencil	
-		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, //we don't know nor care about the starting layout of the attachment
-		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR //after the renderpass ends, the image has to be on a layout ready for display
+		.samples = vk::SampleCountFlagBits::e1,//1 sample, we won't be doing MSAA for now
+		.loadOp = vk::AttachmentLoadOp::eClear, // we Clear when this attachment is loaded
+		.storeOp = vk::AttachmentStoreOp::eStore, // we keep the attachment stored when the renderpass ends
+		.stencilLoadOp = vk::AttachmentLoadOp::eDontCare, //we don't care about stencil	
+		.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+		.initialLayout = vk::ImageLayout::eUndefined, //we don't know nor care about the starting layout of the attachment
+		.finalLayout = vk::ImageLayout::ePresentSrcKHR //after the renderpass ends, the image has to be on a layout ready for display
 	};
 
-	const VkAttachmentReference colorAttachmentRef = {
+	const vk::AttachmentReference colorAttachmentRef = {
 		//attachment number will index into the pAttachments array in the parent renderpass itself
 		.attachment = 0,
-		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		.layout = vk::ImageLayout::eColorAttachmentOptimal
 	};
 
 	// Depth render pass description.
-	const VkAttachmentDescription depthAttachment{
-		.flags = 0,
+	const vk::AttachmentDescription depthAttachment{
 		.format = _depthFormat,
-		.samples = VK_SAMPLE_COUNT_1_BIT,
-		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+		.samples = vk::SampleCountFlagBits::e1,
+		.loadOp = vk::AttachmentLoadOp::eClear,
+		.storeOp = vk::AttachmentStoreOp::eStore,
+		.stencilLoadOp = vk::AttachmentLoadOp::eClear,
+		.stencilStoreOp = vk::AttachmentStoreOp::eStore,
+		.initialLayout = vk::ImageLayout::eUndefined,
+		.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal
 	};
 
-	const VkAttachmentReference depthAttachmentRef = {
+	const vk::AttachmentReference depthAttachmentRef = {
 		//attachment number will index into the pAttachments array in the parent renderpass itself
 		.attachment = 1,
-		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+		.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal
 	};
 
-	VkSubpassDescription subpass = {
-		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+	vk::SubpassDescription subpass = {
+		.pipelineBindPoint = vk::PipelineBindPoint::eGraphics,
 		.colorAttachmentCount = 1,
 		.pColorAttachments = &colorAttachmentRef,
 		.pDepthStencilAttachment = &depthAttachmentRef
 	};
 
 	//array of 2 attachments, one for the color, and other for depth
-	VkAttachmentDescription attachments[2] = { colorAttachment, depthAttachment };
+	vk::AttachmentDescription attachments[2] = { colorAttachment, depthAttachment };
 
-	VkSubpassDependency colorDependency = {
+	vk::SubpassDependency colorDependency = {
 		.srcSubpass = VK_SUBPASS_EXTERNAL,
 		.dstSubpass = 0,
-		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+		.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+		.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+		.srcAccessMask = vk::AccessFlagBits::eNone,
+		.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite
 	};
 
-	VkSubpassDependency depthDependency = {
+	vk::SubpassDependency depthDependency = {
 		.srcSubpass = VK_SUBPASS_EXTERNAL,
 		.dstSubpass = 0,
-		.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-		.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+		.srcStageMask = vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+		.dstStageMask = vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+		.srcAccessMask = vk::AccessFlagBits::eNone,
+		.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentWrite
 	};
 
-	VkSubpassDependency dependencies[2] = { colorDependency, depthDependency };
+	vk::SubpassDependency dependencies[2] = { colorDependency, depthDependency };
 
-	const VkRenderPassCreateInfo renderPassInfo{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+	const vk::RenderPassCreateInfo renderPassInfo{
+		.sType = vk::StructureType::eRenderPassCreateInfo,
 		.attachmentCount = 2,
 		.pAttachments = attachments,
 		.subpassCount = 1,
@@ -268,36 +313,36 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 		.pDependencies = dependencies
 	};
 
-	Helpers::checkVulkanError(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
+	Helpers::checkVulkanError(_device.createRenderPass(&renderPassInfo, nullptr, &_mainRenderPass), "creating the main render pass");
 
 	_mainDeletionQueue.addDeletor([=]() {
-		vkDestroyRenderPass(_device, _mainRenderPass, nullptr);
+		_device.destroyRenderPass(_mainRenderPass);
 		});
 }
 
 void Lullaby::VKRenderer::initSyncStructures() {
 	//create synchronization structures
 
-	VkFenceCreateInfo fenceCreateInfo = {
-		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+	vk::FenceCreateInfo fenceCreateInfo = {
+		.sType = vk::StructureType::eFenceCreateInfo,
 		.pNext = nullptr,
 		//we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
-		.flags = VK_FENCE_CREATE_SIGNALED_BIT
+		.flags = vk::FenceCreateFlagBits::eSignaled
 	};
 
-	Lullaby::Helpers::checkVulkanError(vkCreateFence(_device, &fenceCreateInfo, nullptr, &_renderFence), "creating the main render fence");
+	Helpers::checkVulkanError(_device.createFence(&fenceCreateInfo, nullptr, &_renderFence), "creating the main render fence");
 
 	//for the semaphores we don't need any flags
-	const VkSemaphoreCreateInfo semaphoreCreateInfo = {
-		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0
+	const vk::SemaphoreCreateInfo semaphoreCreateInfo = {
+		.sType = vk::StructureType::eSemaphoreCreateInfo,
+		.pNext = nullptr
 	};
-	Lullaby::Helpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
-	Lullaby::Helpers::checkVulkanError(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
+
+	Helpers::checkVulkanError(_device.createSemaphore(&semaphoreCreateInfo, nullptr, &_presentSemaphore), "creating presentation semaphore");
+	Helpers::checkVulkanError(_device.createSemaphore(&semaphoreCreateInfo, nullptr, &_renderSemaphore), "creating rendering semaphore");
 	_mainDeletionQueue.addDeletor([=]() {
-		vkDestroySemaphore(_device, _presentSemaphore, nullptr);
-		vkDestroySemaphore(_device, _renderSemaphore, nullptr);
+		_device.destroySemaphore(_presentSemaphore);
+		_device.destroySemaphore(_renderSemaphore);
 		});
 }
 
@@ -323,18 +368,19 @@ void Lullaby::VKRenderer::initPipelines() {
 	auto layoutInfo = PipelineBuilder::defaultLayoutInfo();
 
 	//setup push constants
-	VkPushConstantRange pushConstant{};
-	//this push constant range starts at the beginning
-	pushConstant.offset = 0;
-	//this push constant range takes up the size of a MeshPushConstants struct
-	pushConstant.size = sizeof(MeshPushConstants);
-	//this push constant range is accessible only in the vertex shader
-	pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	vk::PushConstantRange pushConstant{
+		//this push constant range is accessible only in the vertex shader
+		.stageFlags = vk::ShaderStageFlagBits::eVertex,
+		//this push constant range starts at the beginning
+		.offset = 0,
+		//this push constant range takes up the size of a MeshPushConstants struct
+		.size = sizeof(MeshPushConstants)
+	};
 
 	layoutInfo.pPushConstantRanges = &pushConstant;
 	layoutInfo.pushConstantRangeCount = 1;
 
-	Lullaby::Helpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_meshPipelineLayout), "creating pipeline layout");
+	Helpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_meshPipelineLayout), "creating pipeline layout");
 
 	auto vertexInputInfo = PipelineBuilder::defaultVertexInputInfo();
 	auto vertexDescription = Vertex::getVertexDescription();
@@ -382,37 +428,40 @@ void Lullaby::VKRenderer::initPipelines() {
 
 void Lullaby::VKRenderer::render() {
 	//wait until the GPU has finished rendering the last frame. Timeout of 1 second
-	Lullaby::Helpers::checkVulkanError(vkWaitForFences(_device, 1, &_renderFence, true, 1000000000), "waiting for render fence");
-	Lullaby::Helpers::checkVulkanError(vkResetFences(_device, 1, &_renderFence), "reseting render fence");
+	Helpers::checkVulkanError(_device.waitForFences(1, &_renderFence, true, 1000000000), "waiting for render fence");
+	Helpers::checkVulkanError(_device.resetFences(1, &_renderFence), "reseting render fence");
 
 	//request image from the swapchain, one second timeout
 	uint32_t swapchainImageIndex;
-	Lullaby::Helpers::checkVulkanError(vkAcquireNextImageKHR(_device, _swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex), "acquiring next image from swapchain");
+	Helpers::checkVulkanError(_device.acquireNextImageKHR(_swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex), "acquiring next image from swapchain");
 
-	Lullaby::Helpers::checkVulkanError(vkResetCommandBuffer(_mainCommandBuffer, 0), "reseting command buffer");
+	_mainCommandBuffer.reset();
+	//Helpers::checkVulkanError(, "reseting command buffer");
 
 	//Begin the command buffer recording. We will use this command buffer exactly once, so we want to let Vulkan know that
-	const VkCommandBufferBeginInfo cmdBeginInfo = {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+	const vk::CommandBufferBeginInfo cmdBeginInfo = {
+		.sType = vk::StructureType::eCommandBufferBeginInfo,
 		.pNext = nullptr,
-		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+		.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
 		.pInheritanceInfo = nullptr
 	};
 
-	Lullaby::Helpers::checkVulkanError(vkBeginCommandBuffer(_mainCommandBuffer, &cmdBeginInfo), "beginning command buffer recording");
+	Helpers::checkVulkanError(_mainCommandBuffer.begin(&cmdBeginInfo), "beginning command buffer recording");
 
-	VkClearValue clearColor;
-	clearColor.color = { { 0.05f, 0.05f, 0.05f, 1.0f } };
+	/*VkClearValue clearColor;
+	clearColor = { { 0.05f, 0.05f, 0.05f, 1.0f } };
 
 	VkClearValue clearDepth;
-	clearDepth.depthStencil.depth = 1.f;
+	clearDepth.depthStencil.depth = 1.f;*/
 
-	VkClearValue clears[2] = { clearColor, clearDepth };
+	std::array<vk::ClearValue, 2> clearValues;
+	clearValues[0].color = { 0.05f, 0.05f, 0.05f, 1.0f };
+	clearValues[1].depthStencil.depth = 1.f;
 
 	//start the main renderpass.
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
-	const VkRenderPassBeginInfo rpInfo = {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+	const vk::RenderPassBeginInfo rpInfo = {
+		.sType = vk::StructureType::eRenderPassBeginInfo,
 		.pNext = nullptr,
 		.renderPass = _mainRenderPass,
 		.framebuffer = _framebuffers[swapchainImageIndex],
@@ -421,12 +470,10 @@ void Lullaby::VKRenderer::render() {
 			.extent = {_renderResolution.x, _renderResolution.y}
 		},
 		.clearValueCount = 2,
-		.pClearValues = clears,
+		.pClearValues = clearValues.data(),
 	};
-
-	vkCmdBeginRenderPass(_mainCommandBuffer, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	vkCmdBindPipeline(_mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _meshPipeline);
+	_mainCommandBuffer.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+	_mainCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, _meshPipeline);
 
 	//make a model view matrix for rendering the object
 	//camera position
@@ -446,26 +493,26 @@ void Lullaby::VKRenderer::render() {
 	constants.render_matrix = mesh_matrix;
 
 	//upload the matrix to the GPU via push constants
-	vkCmdPushConstants(_mainCommandBuffer, _meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+	_mainCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);
 
 	//bind the mesh vertex buffer with offset 0
-	VkDeviceSize offset = 0;
+	vk::DeviceSize offset = 0;
 	/*vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer._buffer, &offset);
 	vkCmdDraw(_mainCommandBuffer, _sampleMesh._vertices.size(), 1, 0, 0);*/
-
-	vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_dragon._vertexBuffer._buffer, &offset);
-	vkCmdDraw(_mainCommandBuffer, _dragon._vertices.size(), 1, 0, 0);
+	_mainCommandBuffer.bindVertexBuffers(0, 1, &_dragon._vertexBuffer._buffer, &offset);
+	_mainCommandBuffer.draw(_dragon._vertices.size(), 1, 0, 0);
 
 	//finalize the render pass
-	vkCmdEndRenderPass(_mainCommandBuffer);
-	Lullaby::Helpers::checkVulkanError(vkEndCommandBuffer(_mainCommandBuffer), "ending command buffer");
+	_mainCommandBuffer.endRenderPass();
+	_mainCommandBuffer.end();
+	//Helpers::checkVulkanError(_mainCommandBuffer.end(), "ending command buffer");
 
 	//prepare the submission to the queue.
 	//we want to wait on the _presentSemaphore, as that semaphore is signaled when the swapchain is ready
 	//we will signal the _renderSemaphore, to signal that rendering has finished
-	VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	const VkSubmitInfo submit = {
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+	vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	const vk::SubmitInfo submit = {
+		.sType = vk::StructureType::eSubmitInfo,
 		.pNext = nullptr,
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores = &_presentSemaphore,
@@ -475,13 +522,14 @@ void Lullaby::VKRenderer::render() {
 		.signalSemaphoreCount = 1,
 		.pSignalSemaphores = &_renderSemaphore,
 	};
-	Lullaby::Helpers::checkVulkanError(vkQueueSubmit(_graphicsQueue, 1, &submit, _renderFence), "submitting  work to graphics queue");
+
+	Helpers::checkVulkanError(_graphicsQueue.submit(1, &submit, _renderFence), "submitting  work to graphics queue");
 
 	// this will put the image we just rendered into the visible window.
 	// we want to wait on the _renderSemaphore for that,
 	// as it's necessary that drawing commands have finished before the image is displayed to the user
-	const VkPresentInfoKHR presentInfo = {
-		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+	const vk::PresentInfoKHR presentInfo = {
+		.sType = vk::StructureType::ePresentInfoKHR,
 		.pNext = nullptr,
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores = &_renderSemaphore,
@@ -489,7 +537,7 @@ void Lullaby::VKRenderer::render() {
 		.pSwapchains = &_swapchain,
 		.pImageIndices = &swapchainImageIndex,
 	};
-	Lullaby::Helpers::checkVulkanError(vkQueuePresentKHR(_graphicsQueue, &presentInfo), "presenting image");
+	Helpers::checkVulkanError(_graphicsQueue.presentKHR(&presentInfo), "presenting image");
 
 }
 
@@ -516,57 +564,56 @@ void Lullaby::VKRenderer::sampleModel() {
 
 void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {
 	//allocate vertex buffer
-	VkBufferCreateInfo bufferInfo = {
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+	vk::BufferCreateInfo bufferInfo = {
+		.sType = vk::StructureType::eBufferCreateInfo,
 		.size = mesh._vertices.size() * sizeof(Vertex),
-		.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+		.usage = vk::BufferUsageFlagBits::eVertexBuffer,
+		.sharingMode = vk::SharingMode::eExclusive
 	};
 
 	//let the VMA library know that this data should be writeable by CPU, but also readable by GPU
-	VmaAllocationCreateInfo vmaallocInfo = {
-		.usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
+	vma::AllocationCreateInfo vmaallocInfo = {
+		.usage = vma::MemoryUsage::eCpuToGpu,
 	};
 
 	//allocate the buffer
-	Lullaby::Helpers::checkVulkanError(vmaCreateBuffer(_memoryAllocator, &bufferInfo, &vmaallocInfo,
+	Helpers::checkVulkanError(_memoryAllocator.createBuffer(&bufferInfo, &vmaallocInfo,
 		&mesh._vertexBuffer._buffer,
 		&mesh._vertexBuffer._allocation,
 		nullptr), "creating a memory buffer in GPU");
 
 	//add the destruction of triangle mesh buffer to the deletion queue
 	_mainDeletionQueue.addDeletor([=]() {
-		vmaDestroyBuffer(_memoryAllocator, mesh._vertexBuffer._buffer, mesh._vertexBuffer._allocation);
+		_memoryAllocator.destroyBuffer(mesh._vertexBuffer._buffer, mesh._vertexBuffer._allocation);
 		});
 
 	void* data;
-	vmaMapMemory(_memoryAllocator, mesh._vertexBuffer._allocation, &data);
-
+	_memoryAllocator.mapMemory(mesh._vertexBuffer._allocation, &data);
 	memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
-
-	vmaUnmapMemory(_memoryAllocator, mesh._vertexBuffer._allocation);
+	_memoryAllocator.unmapMemory(mesh._vertexBuffer._allocation);
 }
 
 void Lullaby::VKRenderer::resizeCallback(GLFWwindow* window, int width, int height) {
-	if (_swapchain) {
-		for (int i = 0; i < _swapchainImageViews.size(); i++) {
-			vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
-			vkDestroyImageView(_device, _swapchainImageViews[i], nullptr);
+	auto rendererPtr = getInstance();
+	if (rendererPtr->_swapchain) {
+		for (int i = 0; i < rendererPtr->_swapchainImageViews.size(); i++) {
+			vkDestroyFramebuffer(rendererPtr->_device, rendererPtr->_framebuffers[i], nullptr);
+			vkDestroyImageView(rendererPtr->_device, rendererPtr->_swapchainImageViews[i], nullptr);
 		}
-		vkDestroyImageView(_device, _depthImageView, nullptr);
-		vmaDestroyImage(_memoryAllocator, _depthImage._image, _depthImage._allocation);
-		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
-		_renderResolution.x = width;
-		_renderResolution.y = height;
-		initSwapchain({ width, height }, false);
-		initFramebuffers(false);
+		vkDestroyImageView(rendererPtr->_device, rendererPtr->_depthImageView, nullptr);
+		vmaDestroyImage(rendererPtr->_memoryAllocator, rendererPtr->_depthImage._image, rendererPtr->_depthImage._allocation);
+		vkDestroySwapchainKHR(rendererPtr->_device, rendererPtr->_swapchain, nullptr);
+		rendererPtr->_renderResolution.x = width;
+		rendererPtr->_renderResolution.y = height;
+		rendererPtr->initSwapchain({ width, height }, false);
+		rendererPtr->initFramebuffers(false);
 	}
 }
 
 void Lullaby::VKRenderer::releaseResources() {
 	if (_isInitialized) {
 		//make sure the GPU has stopped doing its things
-		vkWaitForFences(_device, 1, &_renderFence, true, 1000000000);
+		_device.waitForFences(1, &_renderFence, true, 1000000000);
 
 		_mainDeletionQueue.flush();
 

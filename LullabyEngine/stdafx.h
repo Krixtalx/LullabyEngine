@@ -2,8 +2,6 @@
 #define _USE_MATH_DEFINES
 #define GLM_ENABLE_EXPERIMENTAL
 #define IMGUI_DEFINE_MATH_OPERATORS
-//#define VK_NO_PROTOTYPES
-//#define VOLK_IMPLEMENTATION
 
 #include <vector>
 #include <memory>
@@ -11,8 +9,8 @@
 #include "fmt/core.h"
 #include "fmt/color.h"
 
-//#include "Volk/volk.h"
-#include "vulkan/vulkan.h"
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include "vulkan/vulkan.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"

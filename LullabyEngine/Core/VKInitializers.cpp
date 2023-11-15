@@ -73,8 +73,8 @@ VkPipelineDepthStencilStateCreateInfo Lullaby::Helpers::depthStencilCreateInfo(b
 	return info;
 }
 
-void Lullaby::Helpers::checkVulkanError(const VkResult result, const std::string& when, const std::source_location& location) {
-	if (result != VK_SUCCESS) {
+void Lullaby::Helpers::checkVulkanError(const vk::Result result, const std::string& when, const std::source_location& location) {
+	if (result != vk::Result::eSuccess) {
 		fmt::print(stderr, fg(fmt::color::red), "[{}]->Detected vulkan error while {}\n", location.function_name(), when);
 	}
 }

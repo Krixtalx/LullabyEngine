@@ -54,15 +54,15 @@ bool Lullaby::Mesh::loadFromObj(const std::string& filename) {
 	std::string err;
 
 	//load the OBJ file
-	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename.c_str(), nullptr);
+	bool ret = LoadObj(&attrib, &shapes, &materials, &err, filename.c_str(), nullptr);
 
 	//if we have any error, print it to the console, and break the mesh loading.
 	//This happens if the file can't be found or is malformed
 	if (!err.empty()) {
 		if (err.substr(0, 4) == "WARN")
-			fmt::print(fg(fmt::color::yellow), "{}\n", err);
+			print(fg(fmt::color::yellow), "{}\n", err);
 		else
-			fmt::print(fg(fmt::color::red), "{}\n", err);
+			print(fg(fmt::color::red), "{}\n", err);
 	}
 
 	if (!ret)

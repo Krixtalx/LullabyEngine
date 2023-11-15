@@ -2,7 +2,7 @@
 
 #include "DeletionQueue.h"
 #include "VkBootstrap.h"
-#include "vk_mem_alloc.h"
+#include "vk_mem_alloc.hpp"
 #include "DataContainers/Mesh.h"
 
 struct MeshPushConstants {
@@ -13,50 +13,50 @@ struct MeshPushConstants {
 namespace Lullaby {
 	class VKRenderer : public Singleton<VKRenderer> {
 		//Vulkan objects
-		VkInstance _instance = nullptr; //Vulkan instance. 
+		vk::Instance _instance = nullptr; //Vulkan instance. 
 		VkDebugUtilsMessengerEXT _debugMesseger = nullptr;
-		VkPhysicalDevice _choosenGPU = nullptr;
-		VkDevice _device = nullptr; //Vulkan device for commands
-		VkQueue _graphicsQueue = nullptr; //queue we will submit to
+		vk::PhysicalDevice _choosenGPU = nullptr;
+		vk::Device _device = nullptr; //Vulkan device for commands
+		vk::Queue _graphicsQueue = nullptr; //queue we will submit to
 		uint32_t _graphicsQueueFamily = 0; //family of that queue
-		VkQueue _computeQueue = nullptr; //queue we will submit to
+		vk::Queue _computeQueue = nullptr; //queue we will submit to
 		uint32_t _computeQueueFamily = 0; //family of that queue
 
 		//Swapchain
-		VkSurfaceKHR _surface = nullptr;
-		VkSwapchainKHR _swapchain = nullptr;
-		VkFormat _swapchainImageFormat;
-		std::vector<VkImage> _swapchainImages;
-		std::vector<VkImageView> _swapchainImageViews;
+		vk::SurfaceKHR _surface = nullptr;
+		vk::SwapchainKHR _swapchain = nullptr;
+		vk::Format _swapchainImageFormat;
+		std::vector<vk::Image> _swapchainImages;
+		std::vector<vk::ImageView> _swapchainImageViews;
 		uvec2 _renderResolution = {};
 
 		//GPU Commands
-		VkCommandPool _graphicsCommandPool = nullptr; //the command pool for our graphics commands
+		vk::CommandPool _graphicsCommandPool = nullptr; //the command pool for our graphics commands
 		//VkCommandPool _computeCommandPool; //the command pool for our compute commands
-		VkCommandBuffer _mainCommandBuffer = nullptr; //the buffer we will record into
+		vk::CommandBuffer _mainCommandBuffer = nullptr; //the buffer we will record into
 
 		//Render pass
-		VkRenderPass _mainRenderPass = nullptr;
-		std::vector<VkFramebuffer> _framebuffers;
+		vk::RenderPass _mainRenderPass = nullptr;
+		std::vector<vk::Framebuffer> _framebuffers;
 
 		//Sync
-		VkSemaphore _presentSemaphore = nullptr, _renderSemaphore = nullptr;
-		VkFence _renderFence = nullptr;
+		vk::Semaphore _presentSemaphore = nullptr, _renderSemaphore = nullptr;
+		vk::Fence _renderFence = nullptr;
 
 		//Pipelines
-		VkPipeline _meshPipeline = nullptr;
-		VkPipelineLayout _meshPipelineLayout = nullptr;
+		vk::Pipeline _meshPipeline = nullptr;
+		vk::PipelineLayout _meshPipelineLayout = nullptr;
 
 		//Memory allocator
-		VmaAllocator _memoryAllocator = nullptr;
+		vma::Allocator _memoryAllocator = nullptr;
 
 		//Deletion queue
 		DeletionQueue _mainDeletionQueue;
 
 		//Depth buffer
-		VkImageView _depthImageView = nullptr;
+		vk::ImageView _depthImageView = nullptr;
 		Types::AllocatedImage _depthImage;
-		VkFormat _depthFormat;
+		vk::Format _depthFormat;
 
 		//Sample model
 		Mesh _sampleMesh;
@@ -79,7 +79,7 @@ namespace Lullaby {
 		void sampleModel();
 		void uploadGeometry(Mesh& mesh);
 
-		void resizeCallback(GLFWwindow* window, int width, int height);
+		static void resizeCallback(GLFWwindow* window, int width, int height);
 		void releaseResources();
 		virtual ~VKRenderer();
 	};

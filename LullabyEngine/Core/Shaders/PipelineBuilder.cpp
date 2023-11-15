@@ -3,6 +3,10 @@
 
 #include "../VKInitializers.h"
 
+Lullaby::PipelineBuilder::PipelineBuilder() = default;
+
+Lullaby::PipelineBuilder::~PipelineBuilder() = default;
+
 VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass) {
 	//make viewport state from our stored viewport and scissor.
 	//at the moment we won't support multiple viewports or scissors
