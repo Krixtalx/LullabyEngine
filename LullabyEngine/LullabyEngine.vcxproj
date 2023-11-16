@@ -165,7 +165,7 @@
     <ClCompile Include="Core\DataContainers\Mesh.cpp" />
     <ClCompile Include="Core\DeletionQueue.cpp" />
     <ClCompile Include="Core\Shaders\PipelineBuilder.cpp" />
-    <ClCompile Include="Core\VKRenderer.cpp" />
+    <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="Geometry\AABB.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Core\Window.cpp" />
@@ -183,7 +183,7 @@
     <ClInclude Include="Core\DeletionQueue.h" />
     <ClInclude Include="Core\Shaders\PipelineBuilder.h" />
     <ClInclude Include="Core\VKInitializers.h" />
-    <ClInclude Include="Core\VKRenderer.h" />
+    <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="Geometry\AABB.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="resource.h" />

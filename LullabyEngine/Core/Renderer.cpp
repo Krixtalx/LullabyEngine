@@ -1,12 +1,12 @@
 // ReSharper disable All
 #include "stdafx.h"
-#include "VKRenderer.h"
+#define VMA_IMPLEMENTATION
+#include "Renderer.h"
 #include "Shaders\PipelineBuilder.h"
 #include "VKInitializers.h"
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.hpp"
 
-void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
+
+void Lullaby::Renderer::initRenderer(GLFWwindow* window) {
 	if (!_isInitialized) {
 		/*if (volkInitialize() != VK_SUCCESS) {
 			throw std::runtime_error("Problem while initializing Volk");
@@ -82,7 +82,7 @@ void Lullaby::VKRenderer::initRenderer(GLFWwindow* window) {
 	}
 }
 
-void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize, bool addDeletors) {
+void Lullaby::Renderer::initSwapchain(const ivec2 windowSize, bool addDeletors) {
 	vkb::SwapchainBuilder swapchainBuilder{ _choosenGPU,_device,_surface };
 
 	vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -174,7 +174,7 @@ void Lullaby::VKRenderer::initSwapchain(const ivec2 windowSize, bool addDeletors
 			});
 }
 
-void Lullaby::VKRenderer::initCommands() {
+void Lullaby::Renderer::initCommands() {
 	//create a command pool for commands submitted to the graphics queue.
 	//the command pool will be one that can submit graphics commands
 	//we also want the pool to allow for resetting of individual command buffers
@@ -206,7 +206,7 @@ void Lullaby::VKRenderer::initCommands() {
 		});
 }
 
-void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
+void Lullaby::Renderer::initFramebuffers(bool addDeletors) {
 	//create the framebuffers for the swapchain images. This will connect the render-pass to the images for rendering
 	vk::FramebufferCreateInfo fbInfo = {
 		.sType = vk::StructureType::eFramebufferCreateInfo,
@@ -236,7 +236,7 @@ void Lullaby::VKRenderer::initFramebuffers(bool addDeletors) {
 
 }
 
-void Lullaby::VKRenderer::initDefaultRenderpass() {
+void Lullaby::Renderer::initDefaultRenderpass() {
 	// the renderpass will use this color attachment.		
 	const vk::AttachmentDescription colorAttachment = {
 		.format = _swapchainImageFormat, //the attachment will have the format needed by the swapchain
@@ -320,7 +320,7 @@ void Lullaby::VKRenderer::initDefaultRenderpass() {
 		});
 }
 
-void Lullaby::VKRenderer::initSyncStructures() {
+void Lullaby::Renderer::initSyncStructures() {
 	//create synchronization structures
 
 	vk::FenceCreateInfo fenceCreateInfo = {
@@ -346,7 +346,7 @@ void Lullaby::VKRenderer::initSyncStructures() {
 		});
 }
 
-void Lullaby::VKRenderer::initPipelines() {
+void Lullaby::Renderer::initPipelines() {
 	const VkShaderModule triangleVertexShader = PipelineBuilder::loadShaderModule(
 		_device, "Shaders/TriangleVertex.spv");
 
@@ -380,7 +380,7 @@ void Lullaby::VKRenderer::initPipelines() {
 	layoutInfo.pPushConstantRanges = &pushConstant;
 	layoutInfo.pushConstantRangeCount = 1;
 
-	Helpers::checkVulkanError(vkCreatePipelineLayout(_device, &layoutInfo, nullptr, &_meshPipelineLayout), "creating pipeline layout");
+	Helpers::checkVulkanError(_device.createPipelineLayout(&layoutInfo, nullptr, &_meshPipelineLayout), "creating pipeline layout");
 
 	auto vertexInputInfo = PipelineBuilder::defaultVertexInputInfo();
 	auto vertexDescription = Vertex::getVertexDescription();
@@ -391,11 +391,11 @@ void Lullaby::VKRenderer::initPipelines() {
 
 	PipelineInfo info{
 		._shaderStages = {
-			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader),
-			PipelineBuilder::defaultShaderStageInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
+			PipelineBuilder::defaultShaderStageInfo(vk::ShaderStageFlagBits::eVertex, triangleVertexShader),
+			PipelineBuilder::defaultShaderStageInfo(vk::ShaderStageFlagBits::eFragment, triangleFragShader)
 		},
 		._vertexInputInfo = vertexInputInfo,
-		._inputAssembly = PipelineBuilder::defaultInputAssemblyInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
+		._inputAssembly = PipelineBuilder::defaultInputAssemblyInfo(vk::PrimitiveTopology::eTriangleList),
 		._viewport = {
 			.x = .0f,
 			.y = .0f,
@@ -407,9 +407,9 @@ void Lullaby::VKRenderer::initPipelines() {
 			.offset = {0,0},
 			.extent = {_renderResolution.x, _renderResolution.y}
 		},
-		._rasterizer = PipelineBuilder::defaultRasterizationInfo(VK_POLYGON_MODE_FILL),
+		._rasterizer = PipelineBuilder::defaultRasterizationInfo(vk::PolygonMode::eFill),
 		._colorBlendAttachment = PipelineBuilder::defaultColorBlendState(),
-		._depthStencil = Helpers::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL),
+		._depthStencil = Helpers::depthStencilCreateInfo(true, true, vk::CompareOp::eLessOrEqual),
 		._multisampling = PipelineBuilder::defaultMultisampleInfo(),
 		._pipelineLayout = _meshPipelineLayout
 	};
@@ -426,7 +426,7 @@ void Lullaby::VKRenderer::initPipelines() {
 		});
 }
 
-void Lullaby::VKRenderer::render() {
+void Lullaby::Renderer::render() {
 	//wait until the GPU has finished rendering the last frame. Timeout of 1 second
 	Helpers::checkVulkanError(_device.waitForFences(1, &_renderFence, true, 1000000000), "waiting for render fence");
 	Helpers::checkVulkanError(_device.resetFences(1, &_renderFence), "reseting render fence");
@@ -541,7 +541,7 @@ void Lullaby::VKRenderer::render() {
 
 }
 
-void Lullaby::VKRenderer::sampleTriangle() {//make the array 3 vertices long
+void Lullaby::Renderer::sampleTriangle() {//make the array 3 vertices long
 	_sampleMesh._vertices.resize(3);
 
 	//vertex positions
@@ -557,12 +557,12 @@ void Lullaby::VKRenderer::sampleTriangle() {//make the array 3 vertices long
 	uploadGeometry(_sampleMesh);
 }
 
-void Lullaby::VKRenderer::sampleModel() {
+void Lullaby::Renderer::sampleModel() {
 	_dragon.loadFromObj("../Assets/Models/Dragon.obj");
 	uploadGeometry(_dragon);
 }
 
-void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {
+void Lullaby::Renderer::uploadGeometry(Mesh& mesh) {
 	//allocate vertex buffer
 	vk::BufferCreateInfo bufferInfo = {
 		.sType = vk::StructureType::eBufferCreateInfo,
@@ -593,9 +593,10 @@ void Lullaby::VKRenderer::uploadGeometry(Mesh& mesh) {
 	_memoryAllocator.unmapMemory(mesh._vertexBuffer._allocation);
 }
 
-void Lullaby::VKRenderer::resizeCallback(GLFWwindow* window, int width, int height) {
+void Lullaby::Renderer::resizeCallback(GLFWwindow* window, int width, int height) {
 	auto rendererPtr = getInstance();
 	if (rendererPtr->_swapchain) {
+		rendererPtr->_device.waitForFences(1, &rendererPtr->_renderFence, true, 10000000);
 		for (int i = 0; i < rendererPtr->_swapchainImageViews.size(); i++) {
 			vkDestroyFramebuffer(rendererPtr->_device, rendererPtr->_framebuffers[i], nullptr);
 			vkDestroyImageView(rendererPtr->_device, rendererPtr->_swapchainImageViews[i], nullptr);
@@ -610,7 +611,7 @@ void Lullaby::VKRenderer::resizeCallback(GLFWwindow* window, int width, int heig
 	}
 }
 
-void Lullaby::VKRenderer::releaseResources() {
+void Lullaby::Renderer::releaseResources() {
 	if (_isInitialized) {
 		//make sure the GPU has stopped doing its things
 		_device.waitForFences(1, &_renderFence, true, 1000000000);
@@ -627,6 +628,6 @@ void Lullaby::VKRenderer::releaseResources() {
 	}
 }
 
-Lullaby::VKRenderer::~VKRenderer() {
+Lullaby::Renderer::~Renderer() {
 	releaseResources();
 }

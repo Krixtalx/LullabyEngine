@@ -1,6 +1,5 @@
 #pragma once
-#include "stdafx.h"
-#include "VKRenderer.h"
+#include "Renderer.h"
 
 namespace Lullaby {
 	class Window final : public Singleton<Window> {
@@ -8,7 +7,7 @@ namespace Lullaby {
 		std::string _title;
 		ivec2 _resolution;
 
-		VKRenderer* _renderer;
+		Renderer* _renderer;
 		GLFWwindow* _window;
 		bool _isHeadless = false;
 		const bool _disableTitleBar = true;

@@ -7,34 +7,34 @@ Lullaby::VertexInputDescription Lullaby::Vertex::getVertexDescription() {
 	VertexInputDescription description;
 
 	//we will have just 1 vertex buffer binding, with a per-vertex rate
-	constexpr VkVertexInputBindingDescription mainBinding = {
+	constexpr vk::VertexInputBindingDescription mainBinding = {
 		.binding = 0,
 		.stride = sizeof(Vertex),
-		.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+		.inputRate = vk::VertexInputRate::eVertex
 	};
 
 	description._bindings.push_back(mainBinding);
 
-	const VkVertexInputAttributeDescription positionAttribute = {
+	const vk::VertexInputAttributeDescription positionAttribute = {
 		.location = 0,
 		.binding = 0,
-		.format = VK_FORMAT_R32G32B32_SFLOAT,
+		.format = vk::Format::eR32G32B32Sfloat,
 		.offset = offsetof(Vertex, _position)
 	};
 	description._attributes.push_back(positionAttribute);
 
-	const VkVertexInputAttributeDescription normalAttibute = {
+	const vk::VertexInputAttributeDescription normalAttibute = {
 		.location = 1,
 		.binding = 0,
-		.format = VK_FORMAT_R32G32B32_SFLOAT,
+		.format = vk::Format::eR32G32B32Sfloat,
 		.offset = offsetof(Vertex, _normal)
 	};
 	description._attributes.push_back(normalAttibute);
 
-	const VkVertexInputAttributeDescription colorAttribute = {
+	const vk::VertexInputAttributeDescription colorAttribute = {
 		.location = 2,
 		.binding = 0,
-		.format = VK_FORMAT_R32G32B32_SFLOAT,
+		.format = vk::Format::eR32G32B32Sfloat,
 		.offset = offsetof(Vertex, _color)
 	};
 	description._attributes.push_back(colorAttribute);

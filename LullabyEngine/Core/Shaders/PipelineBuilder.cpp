@@ -7,11 +7,11 @@ Lullaby::PipelineBuilder::PipelineBuilder() = default;
 
 Lullaby::PipelineBuilder::~PipelineBuilder() = default;
 
-VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass) {
+vk::Pipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, const vk::Device& device, const vk::RenderPass& renderPass) {
 	//make viewport state from our stored viewport and scissor.
 	//at the moment we won't support multiple viewports or scissors
-	const VkPipelineViewportStateCreateInfo viewportState = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+	const vk::PipelineViewportStateCreateInfo viewportState = {
+		.sType = vk::StructureType::ePipelineViewportStateCreateInfo,
 		.pNext = nullptr,
 		.viewportCount = 1,
 		.pViewports = &pipelineInfo._viewport,
@@ -21,19 +21,19 @@ VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, c
 
 	//setup dummy color blending. We aren't using transparent objects yet
 	//the blending is just "no blend", but we do write to the color attachment
-	const VkPipelineColorBlendStateCreateInfo colorBlending = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+	const vk::PipelineColorBlendStateCreateInfo colorBlending = {
+		.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo,
 		.pNext = nullptr,
 		.logicOpEnable = VK_FALSE,
-		.logicOp = VK_LOGIC_OP_COPY,
+		.logicOp = vk::LogicOp::eCopy,
 		.attachmentCount = 1,
 		.pAttachments = &pipelineInfo._colorBlendAttachment
 	};
 
 	//build the actual pipeline
 	//we now use all of the info structs we have been writing into into this one to create the pipeline
-	const VkGraphicsPipelineCreateInfo pipelineCreateInfo = {
-		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+	const vk::GraphicsPipelineCreateInfo pipelineCreateInfo = {
+		.sType = vk::StructureType::eGraphicsPipelineCreateInfo,
 		.pNext = nullptr,
 		.stageCount = static_cast<uint32_t>(pipelineInfo._shaderStages.size()),
 		.pStages = pipelineInfo._shaderStages.data(),
@@ -49,14 +49,14 @@ VkPipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo, c
 		.subpass = 0,
 		.basePipelineHandle = VK_NULL_HANDLE,
 	};
-
-	VkPipeline newPipeline = nullptr;
-	Helpers::checkVulkanError(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &newPipeline), "creating pipeline");
+	const auto temp = device.createGraphicsPipeline(VK_NULL_HANDLE, pipelineCreateInfo);
+	Helpers::checkVulkanError(temp.result, "creating pipeline");
+	const vk::Pipeline newPipeline = temp.value;
 	return newPipeline;
 
 }
 
-VkShaderModule Lullaby::PipelineBuilder::loadShaderModule(const VkDevice& device, const std::string& path) {
+vk::ShaderModule Lullaby::PipelineBuilder::loadShaderModule(const vk::Device& device, const std::string& path) {
 	//open the file. With cursor at the end
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -80,23 +80,23 @@ VkShaderModule Lullaby::PipelineBuilder::loadShaderModule(const VkDevice& device
 	file.close();
 
 	//create a new shader module, using the buffer we loaded
-	const VkShaderModuleCreateInfo createInfo = {
-		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+	const vk::ShaderModuleCreateInfo createInfo = {
+		.sType = vk::StructureType::eShaderModuleCreateInfo,
 		.pNext = nullptr,
 		//codeSize has to be in bytes, so multiply the ints in the buffer by size of int to know the real size of the buffer
 		.codeSize = buffer.size() * sizeof(uint32_t),
 		.pCode = buffer.data()
 	};
 
-	VkShaderModule shaderModule = nullptr;
-	vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
+	vk::ShaderModule shaderModule = nullptr;
+	Helpers::checkVulkanError(device.createShaderModule(&createInfo, nullptr, &shaderModule), "creating shader module");
 
 	return shaderModule;
 }
 
-VkPipelineShaderStageCreateInfo Lullaby::PipelineBuilder::defaultShaderStageInfo(const VkShaderStageFlagBits stage, const VkShaderModule shaderModule) {
-	const VkPipelineShaderStageCreateInfo info{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+vk::PipelineShaderStageCreateInfo Lullaby::PipelineBuilder::defaultShaderStageInfo(const vk::ShaderStageFlagBits stage, const vk::ShaderModule shaderModule) {
+	const vk::PipelineShaderStageCreateInfo info{
+		.sType = vk::StructureType::ePipelineShaderStageCreateInfo,
 		.pNext = nullptr,
 		//Shader stage
 		.stage = stage,
@@ -109,9 +109,9 @@ VkPipelineShaderStageCreateInfo Lullaby::PipelineBuilder::defaultShaderStageInfo
 	return info;
 }
 
-VkPipelineVertexInputStateCreateInfo Lullaby::PipelineBuilder::defaultVertexInputInfo() {
-	constexpr VkPipelineVertexInputStateCreateInfo vertexInputInfo{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+vk::PipelineVertexInputStateCreateInfo Lullaby::PipelineBuilder::defaultVertexInputInfo() {
+	constexpr vk::PipelineVertexInputStateCreateInfo vertexInputInfo{
+		.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo,
 		.pNext = nullptr,
 		.pVertexBindingDescriptions = nullptr,
 		.vertexAttributeDescriptionCount = 0
@@ -119,9 +119,9 @@ VkPipelineVertexInputStateCreateInfo Lullaby::PipelineBuilder::defaultVertexInpu
 	return vertexInputInfo;
 }
 
-VkPipelineInputAssemblyStateCreateInfo Lullaby::PipelineBuilder::defaultInputAssemblyInfo(const VkPrimitiveTopology topology) {
-	const VkPipelineInputAssemblyStateCreateInfo info{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+vk::PipelineInputAssemblyStateCreateInfo Lullaby::PipelineBuilder::defaultInputAssemblyInfo(const vk::PrimitiveTopology topology) {
+	const vk::PipelineInputAssemblyStateCreateInfo info{
+		.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo,
 		.pNext = nullptr,
 		.topology = topology,
 		.primitiveRestartEnable = VK_FALSE
@@ -130,15 +130,15 @@ VkPipelineInputAssemblyStateCreateInfo Lullaby::PipelineBuilder::defaultInputAss
 	return info;
 }
 
-VkPipelineRasterizationStateCreateInfo Lullaby::PipelineBuilder::defaultRasterizationInfo(const VkPolygonMode polygonMode) {
-	const VkPipelineRasterizationStateCreateInfo info{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+vk::PipelineRasterizationStateCreateInfo Lullaby::PipelineBuilder::defaultRasterizationInfo(const vk::PolygonMode polygonMode) {
+	const vk::PipelineRasterizationStateCreateInfo info{
+		.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo,
 		.pNext = nullptr,
 		.depthClampEnable = VK_FALSE,
 		.rasterizerDiscardEnable = VK_FALSE,
 		.polygonMode = polygonMode,
-		.cullMode = VK_CULL_MODE_NONE,
-		.frontFace = VK_FRONT_FACE_CLOCKWISE,
+		.cullMode = vk::CullModeFlagBits::eBack,
+		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = VK_FALSE,
 		.depthBiasConstantFactor = .0f,
 		.depthBiasClamp = .0f,
@@ -148,11 +148,11 @@ VkPipelineRasterizationStateCreateInfo Lullaby::PipelineBuilder::defaultRasteriz
 	return info;
 }
 
-VkPipelineMultisampleStateCreateInfo Lullaby::PipelineBuilder::defaultMultisampleInfo() {
-	const VkPipelineMultisampleStateCreateInfo info = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+vk::PipelineMultisampleStateCreateInfo Lullaby::PipelineBuilder::defaultMultisampleInfo() {
+	const vk::PipelineMultisampleStateCreateInfo info = {
+		.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo,
 		.pNext = nullptr,
-		.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+		.rasterizationSamples = vk::SampleCountFlagBits::e1,
 		.sampleShadingEnable = VK_FALSE,
 		.minSampleShading = 1.0f,
 		.pSampleMask = nullptr,
@@ -162,20 +162,18 @@ VkPipelineMultisampleStateCreateInfo Lullaby::PipelineBuilder::defaultMultisampl
 	return info;
 }
 
-VkPipelineColorBlendAttachmentState Lullaby::PipelineBuilder::defaultColorBlendState() {
-	const VkPipelineColorBlendAttachmentState info{
+vk::PipelineColorBlendAttachmentState Lullaby::PipelineBuilder::defaultColorBlendState() {
+	const vk::PipelineColorBlendAttachmentState info{
 		.blendEnable = VK_FALSE,
-		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-			VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+		.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
 	};
 	return info;
 }
 
-VkPipelineLayoutCreateInfo Lullaby::PipelineBuilder::defaultLayoutInfo() {
-	const VkPipelineLayoutCreateInfo info{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+vk::PipelineLayoutCreateInfo Lullaby::PipelineBuilder::defaultLayoutInfo() {
+	const vk::PipelineLayoutCreateInfo info{
+		.sType = vk::StructureType::ePipelineLayoutCreateInfo,
 		.pNext = nullptr,
-		.flags = 0,
 		.setLayoutCount = 0,
 		.pSetLayouts = nullptr,
 		.pushConstantRangeCount = 0,

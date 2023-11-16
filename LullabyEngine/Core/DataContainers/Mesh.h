@@ -4,10 +4,10 @@
 namespace Lullaby {
 	struct VertexInputDescription {
 
-		std::vector<VkVertexInputBindingDescription> _bindings;
-		std::vector<VkVertexInputAttributeDescription> _attributes;
+		std::vector<vk::VertexInputBindingDescription> _bindings;
+		std::vector<vk::VertexInputAttributeDescription> _attributes;
 
-		VkPipelineVertexInputStateCreateFlags _flags = 0;
+		vk::PipelineVertexInputStateCreateFlags _flags;
 	};
 	struct Vertex {
 		glm::vec3 _position;

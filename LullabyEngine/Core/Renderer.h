@@ -1,5 +1,4 @@
 #pragma once
-
 #include "DeletionQueue.h"
 #include "VkBootstrap.h"
 #include "vk_mem_alloc.hpp"
@@ -11,7 +10,7 @@ struct MeshPushConstants {
 };
 
 namespace Lullaby {
-	class VKRenderer : public Singleton<VKRenderer> {
+	class Renderer final : public Singleton<Renderer> {
 		//Vulkan objects
 		vk::Instance _instance = nullptr; //Vulkan instance. 
 		VkDebugUtilsMessengerEXT _debugMesseger = nullptr;
@@ -81,6 +80,6 @@ namespace Lullaby {
 
 		static void resizeCallback(GLFWwindow* window, int width, int height);
 		void releaseResources();
-		virtual ~VKRenderer();
+		virtual ~Renderer();
 	};
 }

@@ -88,7 +88,7 @@ void disableTitlebar(GLFWwindow* window) {
 }
 
 Lullaby::Window::Window() : _window(nullptr) {
-	_renderer = VKRenderer::getInstance();
+	_renderer = Renderer::getInstance();
 }
 
 void Lullaby::Window::releaseResources() {
@@ -129,7 +129,7 @@ void Lullaby::Window::init(const std::string& title, int width, int height, cons
 		}
 		if (_disableTitleBar)
 			disableTitlebar(_window);
-		glfwSetWindowSizeCallback(_window, VKRenderer::resizeCallback);
+		glfwSetWindowSizeCallback(_window, Renderer::resizeCallback);
 	}
 	_renderer->initRenderer(_window);
 	if (!headless)

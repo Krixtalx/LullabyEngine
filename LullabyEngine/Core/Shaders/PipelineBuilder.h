@@ -1,17 +1,16 @@
 #pragma once
-
 namespace Lullaby {
 	struct PipelineInfo {
-		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStages;
-		VkPipelineVertexInputStateCreateInfo			_vertexInputInfo;
-		VkPipelineInputAssemblyStateCreateInfo			_inputAssembly;
-		VkViewport										_viewport;
-		VkRect2D										_scissor;
-		VkPipelineRasterizationStateCreateInfo			_rasterizer;
-		VkPipelineColorBlendAttachmentState				_colorBlendAttachment;
-		VkPipelineDepthStencilStateCreateInfo			_depthStencil;
-		VkPipelineMultisampleStateCreateInfo			_multisampling;
-		VkPipelineLayout								_pipelineLayout;
+		std::vector<vk::PipelineShaderStageCreateInfo>	_shaderStages;
+		vk::PipelineVertexInputStateCreateInfo			_vertexInputInfo;
+		vk::PipelineInputAssemblyStateCreateInfo		_inputAssembly;
+		vk::Viewport									_viewport;
+		vk::Rect2D										_scissor;
+		vk::PipelineRasterizationStateCreateInfo		_rasterizer;
+		vk::PipelineColorBlendAttachmentState			_colorBlendAttachment;
+		vk::PipelineDepthStencilStateCreateInfo			_depthStencil;
+		vk::PipelineMultisampleStateCreateInfo			_multisampling;
+		vk::PipelineLayout								_pipelineLayout;
 	};
 
 	class PipelineBuilder final {
@@ -19,15 +18,15 @@ namespace Lullaby {
 		~PipelineBuilder();
 
 	public:
-		static VkPipeline buildPipeline(PipelineInfo& pipelineInfo, const VkDevice& device, const VkRenderPass& renderPass);
+		static vk::Pipeline buildPipeline(PipelineInfo& pipelineInfo, const vk::Device& device, const vk::RenderPass& renderPass);
 
-		static VkShaderModule loadShaderModule(const VkDevice& device, const std::string& path);
-		static VkPipelineShaderStageCreateInfo defaultShaderStageInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule);
-		static VkPipelineVertexInputStateCreateInfo defaultVertexInputInfo();
-		static VkPipelineInputAssemblyStateCreateInfo defaultInputAssemblyInfo(VkPrimitiveTopology topology);
-		static VkPipelineRasterizationStateCreateInfo defaultRasterizationInfo(VkPolygonMode polygonMode);
-		static VkPipelineMultisampleStateCreateInfo defaultMultisampleInfo();
-		static VkPipelineColorBlendAttachmentState defaultColorBlendState();
-		static VkPipelineLayoutCreateInfo defaultLayoutInfo();
+		static vk::ShaderModule loadShaderModule(const vk::Device& device, const std::string& path);
+		static vk::PipelineShaderStageCreateInfo defaultShaderStageInfo(vk::ShaderStageFlagBits stage, vk::ShaderModule shaderModule);
+		static vk::PipelineVertexInputStateCreateInfo defaultVertexInputInfo();
+		static vk::PipelineInputAssemblyStateCreateInfo defaultInputAssemblyInfo(vk::PrimitiveTopology topology);
+		static vk::PipelineRasterizationStateCreateInfo defaultRasterizationInfo(vk::PolygonMode polygonMode);
+		static vk::PipelineMultisampleStateCreateInfo defaultMultisampleInfo();
+		static vk::PipelineColorBlendAttachmentState defaultColorBlendState();
+		static vk::PipelineLayoutCreateInfo defaultLayoutInfo();
 	};
 }

@@ -22,7 +22,7 @@ VkCommandBufferAllocateInfo Lullaby::Helpers::commandBufferAllocateInfo(const Vk
 	return info;
 }
 
-VkImageCreateInfo Lullaby::Helpers::imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
+VkImageCreateInfo Lullaby::Helpers::imageCreateInfo(const VkFormat format, const VkImageUsageFlags usageFlags, const VkExtent3D extent) {
 	const VkImageCreateInfo info{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.pNext = nullptr,
@@ -38,8 +38,8 @@ VkImageCreateInfo Lullaby::Helpers::imageCreateInfo(VkFormat format, VkImageUsag
 	return info;
 }
 
-VkImageViewCreateInfo Lullaby::Helpers::imageViewCreateInfo(VkFormat format, VkImage image,
-	VkImageAspectFlags aspectFlags) {
+VkImageViewCreateInfo Lullaby::Helpers::imageViewCreateInfo(const VkFormat format, const VkImage image,
+	const VkImageAspectFlags aspectFlags) {
 	const VkImageViewCreateInfo info{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.pNext = nullptr,
@@ -57,14 +57,14 @@ VkImageViewCreateInfo Lullaby::Helpers::imageViewCreateInfo(VkFormat format, VkI
 	return info;
 }
 
-VkPipelineDepthStencilStateCreateInfo Lullaby::Helpers::depthStencilCreateInfo(bool doDepthTest, bool depthWrite,
-	VkCompareOp compareOp) {
-	VkPipelineDepthStencilStateCreateInfo info = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+vk::PipelineDepthStencilStateCreateInfo Lullaby::Helpers::depthStencilCreateInfo(const bool doDepthTest, const bool depthWrite,
+	const vk::CompareOp compareOp) {
+	vk::PipelineDepthStencilStateCreateInfo info = {
+		.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo,
 		.pNext = nullptr,
 		.depthTestEnable = doDepthTest ? VK_TRUE : VK_FALSE,
 		.depthWriteEnable = depthWrite ? VK_TRUE : VK_FALSE,
-		.depthCompareOp = doDepthTest ? compareOp : VK_COMPARE_OP_ALWAYS,
+		.depthCompareOp = doDepthTest ? compareOp : vk::CompareOp::eAlways,
 		.depthBoundsTestEnable = VK_FALSE,
 		.stencilTestEnable = VK_FALSE,
 		.minDepthBounds = 0.0f,
