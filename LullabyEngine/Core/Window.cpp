@@ -3,7 +3,6 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-
 WNDPROC original_proc;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -51,6 +50,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				return HTTOPRIGHT;
 			return HTTOP;
 		}
+		if (clientMousePos.y <= borderWidth + 30)
+			return HTCAPTION;
 		if (clientMousePos.x <= borderWidth) {
 			return HTLEFT;
 		}
