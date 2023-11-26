@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Camera">
+      <UniqueIdentifier>{E608F96D-52BE-7163-DBB2-6B3A47676867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\DataContainers">
+      <UniqueIdentifier>{AD8A3C4F-19EC-195D-A259-600F0EBA501C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Shaders">
+      <UniqueIdentifier>{0727380C-F389-C7B0-9C0F-006788519333}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{31B8896B-1D85-E476-469E-D21E32CA1905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{010A8043-6D74-34BA-B6B2-E55F225C120F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Core\Camera\Camera.h">
+      <Filter>Core\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Camera\CameraProjection.h">
+      <Filter>Core\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DataContainers\Mesh.h">
+      <Filter>Core\DataContainers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DataContainers\Types.h">
+      <Filter>Core\DataContainers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DeletionQueue.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Renderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Shaders\PipelineBuilder.h">
+      <Filter>Core\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\VKInitializers.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Geometry\AABB.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\Singleton.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\resource.h" />
+    <ClInclude Include="Source\stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Core\Camera\Camera.cpp">
+      <Filter>Core\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Camera\CameraProjection.cpp">
+      <Filter>Core\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\DataContainers\Mesh.cpp">
+      <Filter>Core\DataContainers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\DeletionQueue.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Renderer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Shaders\PipelineBuilder.cpp">
+      <Filter>Core\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\VKInitializers.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Window.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Geometry\AABB.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\stdafx.cpp" />
+  </ItemGroup>
+</Project>
