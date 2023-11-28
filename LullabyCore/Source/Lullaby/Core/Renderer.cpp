@@ -1,5 +1,5 @@
 // ReSharper disable All
-#include "stdafx.h"
+#include "LullabyPch.h"
 #define VMA_IMPLEMENTATION
 #include "Renderer.h"
 #include "Shaders\PipelineBuilder.h"

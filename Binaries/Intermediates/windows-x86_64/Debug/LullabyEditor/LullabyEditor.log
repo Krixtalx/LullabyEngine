@@ -1,3 +1,0 @@
-﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\GitHub\LullabyEngine\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(1134,5): error MSB6006: "link.exe" salió con el código 1104.
-LINK : fatal error LNK1104: no se puede abrir el archivo 'C:\GitHub\LullabyEngine\Binaries\windows-x86_64\Debug\LullabyCore\LullabyCore.lib'

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "LullabyPch.h"
 #include "VKInitializers.h"
 
 VkCommandPoolCreateInfo Lullaby::Helpers::commandPoolCreateInfo(const uint32_t& queueFamily, const VkCommandPoolCreateFlags& vkFlags) {

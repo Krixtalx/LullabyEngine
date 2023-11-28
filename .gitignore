@@ -39,8 +39,10 @@ x86/*
 packages/*
 tools/*
 vcpkg_installed/*
+Binaries/*
 *.pdb
-*.tlog
+*.tlog    
+*.idb
 
 # Models
 *.bin
@@ -57,3 +59,5 @@ vcpkg_installed/*
 *.bak
 *.TIF
 *.ini
+*.vcxproj
+*.filters

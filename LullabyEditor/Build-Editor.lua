@@ -10,7 +10,6 @@ project "LullabyEditor"
    includedirs
    {
       "Source",
-
 	  -- Include Core
 	  "../Core/Source"
    }
@@ -39,6 +38,7 @@ project "LullabyEditor"
        symbols "On"
 
    filter "configurations:Dist"
+       kind("WindowedApp")
        defines { "DIST" }
        runtime "Release"
        optimize "On"

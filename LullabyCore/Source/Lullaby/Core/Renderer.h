@@ -31,7 +31,7 @@ namespace Lullaby {
 
 		//GPU Commands
 		vk::CommandPool _graphicsCommandPool = nullptr; //the command pool for our graphics commands
-		//VkCommandPool _computeCommandPool; //the command pool for our compute commands
+		//vk::CommandPool _computeCommandPool; //the command pool for our compute commands
 		vk::CommandBuffer _mainCommandBuffer = nullptr; //the buffer we will record into
 
 		//Render pass

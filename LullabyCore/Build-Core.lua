@@ -5,12 +5,37 @@ project "LullabyCore"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "Source/**.h", "Source/**.cpp", "Source/**/**.h", "Source/**/**.cpp"}
+   pchheader "LullabyPch.h"
+   pchsource ("Source/LullabyPch.cpp")
+
+   files { "Source/**.h", "Source/**.cpp", "Source/Lullaby/**/**.h", "Source/Lullaby/**/**.cpp"}
 
    includedirs
    {
-      "Source"
+        "Source",
+		"%{VULKAN_SDK}/Include",
+        "%{wks.location}/Dependencies/VMA/include",
+        "%{wks.location}/Dependencies/vkBootstrap",
+	    "%{wks.location}/Dependencies/glfw/include",
+        "%{wks.location}/Dependencies/glm",
+        "%{wks.location}/Dependencies/tinyobjloader"
    }
+
+   libdirs{
+        "%{VULKAN_SDK}/Lib",
+        "%{wks.location}/Dependencies/glfw/lib-vc2022"
+   }
+
+   links{
+        "vulkan-1",
+        "glfw3"
+   }
+
+   defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE"
+	}
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
@@ -20,18 +45,18 @@ project "LullabyCore"
        defines { }
 
    filter "configurations:Debug"
-       defines { "DEBUG" }
+       defines { "LullabyDebug" }
        runtime "Debug"
        symbols "On"
 
    filter "configurations:Release"
-       defines { "RELEASE" }
+       defines { "LullabyRelease" }
        runtime "Release"
        optimize "On"
        symbols "On"
 
    filter "configurations:Dist"
-       defines { "DIST" }
+       defines { "LullabyDist" }
        runtime "Release"
        optimize "On"
        symbols "Off"

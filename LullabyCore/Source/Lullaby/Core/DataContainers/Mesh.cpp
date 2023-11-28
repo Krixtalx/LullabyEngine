@@ -1,7 +1,7 @@
-#include "stdafx.h"
+#include "LullabyPch.h"
 #include "Mesh.h"
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tinyobjloader/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 
 Lullaby::VertexInputDescription Lullaby::Vertex::getVertexDescription() {
 	VertexInputDescription description;
