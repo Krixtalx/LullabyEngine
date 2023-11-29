@@ -61,3 +61,4 @@ Binaries/*
 *.ini
 *.vcxproj
 *.filters
+*.sln
