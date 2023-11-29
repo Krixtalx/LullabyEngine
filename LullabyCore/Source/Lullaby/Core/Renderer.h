@@ -1,12 +1,13 @@
 #pragma once
-#include "DeletionQueue.h"
-#include "VkBootstrap.h"
+#include "GLFW/glfw3.h"
+#include "Lullaby/Utilities/Singleton.h"
 #include "vk_mem_alloc.hpp"
+#include "DeletionQueue.h"
 #include "DataContainers/Mesh.h"
 
 struct MeshPushConstants {
 	glm::vec4 data;
-	glm::mat4 render_matrix;
+	glm::mat4 renderMatrix;
 };
 
 namespace Lullaby {

@@ -3,12 +3,12 @@ project "LullabyCore"
    language "C++"
    cppdialect "C++20"
    targetdir "Binaries/%{cfg.buildcfg}"
-   staticruntime "off"
+   staticruntime "Off"
 
    pchheader "LullabyPch.h"
    pchsource ("Source/LullabyPch.cpp")
 
-   files { "Source/**.h", "Source/**.cpp", "Source/Lullaby/**/**.h", "Source/Lullaby/**/**.cpp"}
+   files { "Source/**.h", "Source/**.cpp", "Source/Lullaby/**.h", "Source/Lullaby/**/**.h", "Source/Lullaby/**/**.cpp", "../Dependencies/vkBootstrap/**.cpp"}
 
    includedirs
    {
@@ -39,6 +39,9 @@ project "LullabyCore"
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
+
+   filter "files:../Dependencies/**/**.cpp"
+       flags{"NoPCH"}
 
    filter "system:windows"
        systemversion "latest"

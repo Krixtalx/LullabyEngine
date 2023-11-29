@@ -1,5 +1,6 @@
 #pragma once
 #include "vk_mem_alloc.hpp"
+
 namespace Lullaby::Types {
 	struct AllocatedBuffer {
 		vk::Buffer _buffer = nullptr;

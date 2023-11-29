@@ -2,8 +2,7 @@
 #include "Renderer.h"
 
 namespace Lullaby {
-	class Window final : public Singleton<Window> {
-		friend class Singleton;
+	class Application final {
 		std::string _title;
 		ivec2 _resolution;
 
@@ -12,12 +11,12 @@ namespace Lullaby {
 		bool _isHeadless = false;
 		const bool _disableTitleBar = true;
 
-		Window();
 		void releaseResources();
 
 	public:
-		~Window();
-		void init(const std::string& title = "Lullaby Engine", int width = 1280, int height = 720, const bool headless = false);
+		Application();
+		~Application();
+		void init(const std::string& title = "Lullaby Engine", int width = 1280, int height = 720, bool headless = false);
 		void renderLoop() const;
 	};
 }

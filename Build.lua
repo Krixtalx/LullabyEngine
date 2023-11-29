@@ -7,7 +7,7 @@ local function premakeVersionComment(prj)
 end
 
 local function vcpkg(prj)
-    premake.w('<VcpkgTriplet>x64-windows-static</VcpkgTriplet>')
+    premake.w('<VcpkgTriplet>x64-windows</VcpkgTriplet>')
     premake.w('<VcpkgEnabled>true</VcpkgEnabled>')
     premake.w('<VcpkgEnableManifest>true</VcpkgEnableManifest>')
 end
@@ -42,5 +42,6 @@ OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
 VULKAN_SDK = os.getenv("VULKAN_SDK")
 
+include "Dependencies/Dependencies.lua"
 include "LullabyCore/Build-Core.lua"
 include "LullabyEditor/Build-Editor.lua"

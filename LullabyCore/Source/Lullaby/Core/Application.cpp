@@ -1,5 +1,5 @@
 #include "LullabyPch.h"
-#include "Window.h"
+#include "Application.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
@@ -27,9 +27,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	case WM_NCHITTEST:
 	{
 		// Expand the hit test area for resizing
-		const int borderWidth = 8; // Adjust this value to control the hit test area size
+		constexpr int borderWidth = 8; // Adjust this value to control the hit test area size
 
-		POINTS mousePos = MAKEPOINTS(lParam);
+		const POINTS mousePos = MAKEPOINTS(lParam);
 		POINT clientMousePos = { mousePos.x, mousePos.y };
 		ScreenToClient(hWnd, &clientMousePos);
 
@@ -88,21 +88,21 @@ void disableTitlebar(GLFWwindow* window) {
 	SetWindowPos(hWnd, nullptr, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE);
 }
 
-Lullaby::Window::Window() : _window(nullptr) {
+Lullaby::Application::Application() : _resolution(0, 0), _window(nullptr) {
 	_renderer = Renderer::getInstance();
 }
 
-void Lullaby::Window::releaseResources() {
+void Lullaby::Application::releaseResources() {
 	glfwDestroyWindow(_window); // - Cerramos y destruimos la ventana de la aplicación.
 	_window = nullptr;
 	glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.
 }
 
-Lullaby::Window::~Window() {
+Lullaby::Application::~Application() {
 	releaseResources();
 }
 
-void Lullaby::Window::init(const std::string& title, int width, int height, const bool headless) {
+void Lullaby::Application::init(const std::string& title, int width, int height, const bool headless) {
 	_isHeadless = headless;
 	if (!headless) {
 		// - Inicializa GLFW. Es un proceso que sólo debe realizarse una vez en la aplicación
@@ -144,7 +144,7 @@ void Lullaby::Window::init(const std::string& title, int width, int height, cons
 	fmt::print(fg(fmt::color::aquamarine), "Lullaby renderer initialized\n");
 }
 
-void Lullaby::Window::renderLoop() const {
+void Lullaby::Application::renderLoop() const {
 	while (!glfwWindowShouldClose(_window)) {
 		glfwPollEvents();
 		_renderer->render();

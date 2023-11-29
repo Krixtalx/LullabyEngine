@@ -3,7 +3,7 @@ project "LullabyEditor"
    language "C++"
    cppdialect "C++20"
    targetdir "Binaries/%{cfg.buildcfg}"
-   staticruntime "off"
+   staticruntime "Off"
 
    files { "Source/**.h", "Source/**.cpp" }
 
@@ -11,7 +11,13 @@ project "LullabyEditor"
    {
       "Source",
 	  -- Include Core
-	  "../Core/Source"
+	  "../LullabyCore/Source",
+      "%{VULKAN_SDK}/Include",
+      "%{wks.location}/Dependencies/VMA/include",
+      "%{wks.location}/Dependencies/vkBootstrap",
+      "%{wks.location}/Dependencies/glfw/include",
+      "%{wks.location}/Dependencies/glm",
+      "%{wks.location}/Dependencies/tinyobjloader"
    }
 
    links

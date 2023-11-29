@@ -2,6 +2,7 @@
 #include "LullabyPch.h"
 #define VMA_IMPLEMENTATION
 #include "Renderer.h"
+#include "VkBootstrap.h"
 #include "Shaders\PipelineBuilder.h"
 #include "VKInitializers.h"
 
@@ -348,7 +349,7 @@ void Lullaby::Renderer::initSyncStructures() {
 
 void Lullaby::Renderer::initPipelines() {
 	const VkShaderModule triangleVertexShader = PipelineBuilder::loadShaderModule(
-		_device, "Shaders/TriangleVertex.spv");
+		_device, "../LullabyCore/Source/Lullaby/Shaders/TriangleVertex.spv");
 
 	if (triangleVertexShader)
 		fmt::print(fg(fmt::color::green), "Triangle vertex shader successfully loaded!\n");
@@ -357,7 +358,7 @@ void Lullaby::Renderer::initPipelines() {
 
 
 	const VkShaderModule triangleFragShader = PipelineBuilder::loadShaderModule(
-		_device, "Shaders/TriangleFragment.spv");
+		_device, "../LullabyCore/Source/Lullaby/Shaders/TriangleFragment.spv");
 
 	if (triangleFragShader)
 		fmt::print(fg(fmt::color::green), "Triangle fragment shader successfully loaded!\n");
@@ -490,7 +491,7 @@ void Lullaby::Renderer::render() {
 	glm::mat4 mesh_matrix = projection * view * model;
 
 	MeshPushConstants constants;
-	constants.render_matrix = mesh_matrix;
+	constants.renderMatrix = mesh_matrix;
 
 	//upload the matrix to the GPU via push constants
 	_mainCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);

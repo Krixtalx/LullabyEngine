@@ -11,7 +11,6 @@
 
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include "vulkan/vulkan.hpp"
-#include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -24,9 +23,6 @@
 //#include "imgui_impl_glfw.h"
 //#include "imgui_stdlib.h"
 //#include "imgui_internal.h"
-
-//Utilities 
-#include "Lullaby/Utilities/Singleton.h"
 
 // Rename
 typedef glm::vec4 vec4;
