@@ -81,6 +81,6 @@ namespace Lullaby {
 
 		static void resizeCallback(GLFWwindow* window, int width, int height);
 		void releaseResources();
-		virtual ~Renderer();
+		~Renderer();
 	};
 }
