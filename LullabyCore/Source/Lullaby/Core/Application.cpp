@@ -80,8 +80,8 @@ void disableTitlebar(GLFWwindow* window) {
 
 	RECT windowRect;
 	GetWindowRect(hWnd, &windowRect);
-	int width = windowRect.right - windowRect.left;
-	int height = windowRect.bottom - windowRect.top;
+	const int width = windowRect.right - windowRect.left;
+	const int height = windowRect.bottom - windowRect.top;
 
 	original_proc = (WNDPROC)GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 	SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc));

@@ -9,7 +9,7 @@ namespace Lullaby {
 		Renderer* _renderer;
 		GLFWwindow* _window;
 		bool _isHeadless = false;
-		const bool _disableTitleBar = true;
+		const bool _disableTitleBar = false;
 
 		void releaseResources();
 

@@ -3,40 +3,37 @@
 
 namespace Lullaby {
 	class Entity {
-		entt::entity _entityId;
-		Scene* _scene;
+		flecs::entity _flecsEntity;
 
 	public:
 		Entity() = default;
-		Entity(entt::entity id, Scene* sourceScene);
+		Entity(flecs::entity id);
 
 		template<typename... T>
 		bool hasComponent() const {
-			return _scene->_registry.all_of<T>(_entityId);
-		}
-
-		template<typename T, typename... Args>
-		void addComponent(Args&&... args) const {
-			if (!hasComponent<T>())
-				_scene->_registry.emplace<T>(_entityId, std::forward<Args>(args)...);
+			return _flecsEntity.has<T>();
 		}
 
 		template<typename T>
-		T& getComponent() const {
-			return _scene->_registry.get<T>(_entityId);
+		void addComponent() const {
+			_flecsEntity.add<T>();
+		}
+
+		template<typename T>
+		T* getComponent() const {
+			return _flecsEntity.get<T>();
 		}
 
 		template<typename T>
 		void removeComponent() const {
-			_scene->_registry.remove<T>(_entityId);
+			_flecsEntity.remove<T>();
 		}
 
-		operator bool() const { return _entityId != entt::null; }
-		operator entt::entity() const { return _entityId; }
-		operator uint32_t() const { return (uint32_t)_entityId; }
+		operator bool() const { return _flecsEntity.is_alive(); }
+		operator flecs::entity() const { return _flecsEntity; }
 
 		bool operator==(const Entity& other) const {
-			return _entityId == other._entityId && _scene == other._scene;
+			return _flecsEntity == other._flecsEntity;
 		}
 
 		bool operator!=(const Entity& other) const {

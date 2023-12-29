@@ -1,5 +1,5 @@
 #pragma once
-#include "entt/entt.hpp"
+#include <flecs.h>
 namespace Lullaby {
 	class Renderer;
 	class Entity;
@@ -7,10 +7,10 @@ namespace Lullaby {
 	class Scene {
 		friend class Entity;
 		friend class Renderer;
-		entt::registry _registry;
+		flecs::world _world;
 
 	public:
 		Scene() = default;
-		Entity createEntity();
+		Entity createEntity() const;
 	};
 }

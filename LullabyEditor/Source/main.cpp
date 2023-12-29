@@ -2,12 +2,12 @@
 #include <fmt/color.h>
 
 int main() {
-	auto setup = Lullaby::Application();
+	auto app = Lullaby::Application();
 	fmt::print(fg(fmt::color::aquamarine), "Starting Lullaby Engine...\n");
 
 	try {
-		setup.init();
-		setup.renderLoop();
+		app.init();
+		app.renderLoop();
 	} catch (const std::exception& exception) {
 		fmt::print(stderr, fg(fmt::color::red), "{}\n", exception.what());
 	}
