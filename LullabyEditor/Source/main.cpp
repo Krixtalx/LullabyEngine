@@ -7,6 +7,7 @@ int main() {
 
 	try {
 		app.init();
+		app.registerLogo(R"(C:\GitHub\LullabyEngine\Logo.png)");
 		app.renderLoop();
 	} catch (const std::exception& exception) {
 		fmt::print(stderr, fg(fmt::color::red), "{}\n", exception.what());

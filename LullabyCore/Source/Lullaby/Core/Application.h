@@ -17,6 +17,7 @@ namespace Lullaby {
 		Application();
 		~Application();
 		void init(const std::string& title = "Lullaby Engine", int width = 1280, int height = 720, bool headless = false);
+		bool registerLogo(const std::string& path) const;
 		void renderLoop() const;
 	};
 }

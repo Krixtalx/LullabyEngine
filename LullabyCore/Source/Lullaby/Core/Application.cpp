@@ -2,6 +2,8 @@
 #include "Application.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 WNDPROC original_proc;
 
@@ -142,6 +144,24 @@ void Lullaby::Application::init(const std::string& title, int width, int height,
 	_renderer->initPipelines();
 	_renderer->sampleModel();
 	fmt::print(fg(fmt::color::aquamarine), "Lullaby renderer initialized\n");
+}
+
+/**
+ * \brief Put the logo in the app window and taskbar
+ * \param path where the icon is. Can be a jpg, png or any fileformat supported by std_image.
+ * \return true if the logo could be loaded and putted, false otherwise
+ */
+bool Lullaby::Application::registerLogo(const std::string& path) const {
+	if (std::filesystem::exists(path)) {
+		GLFWimage images[1];
+		images[0].pixels = stbi_load(path.c_str(), &images[0].width, &images[0].height, nullptr, 4);
+		if (images[0].pixels) {
+			glfwSetWindowIcon(_window, 1, images);
+			stbi_image_free(images[0].pixels);
+			return true;
+		}
+	}
+	return false;
 }
 
 void Lullaby::Application::renderLoop() const {

@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <fstream>
+#include <filesystem>
 #include "fmt/core.h"
 #include "fmt/color.h"
 

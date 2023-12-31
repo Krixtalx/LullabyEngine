@@ -5,7 +5,7 @@ project "LullabyEditor"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "Off"
 
-   files { "Source/**.h", "Source/**.cpp" }
+   files { "Source/**.h", "Source/**.cpp", "Source/**.rc" }
 
    includedirs
    {
