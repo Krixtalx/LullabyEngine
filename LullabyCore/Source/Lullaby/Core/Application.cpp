@@ -7,7 +7,7 @@
 
 WNDPROC original_proc;
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(const HWND hWnd, const UINT uMsg, const WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 	case WM_NCCALCSIZE:
 	{
@@ -104,7 +104,7 @@ Lullaby::Application::~Application() {
 	releaseResources();
 }
 
-void Lullaby::Application::init(const std::string& title, int width, int height, const bool headless) {
+void Lullaby::Application::init(const std::string& title, const int width, const int height, const bool headless) {
 	_isHeadless = headless;
 	if (!headless) {
 		// - Inicializa GLFW. Es un proceso que sólo debe realizarse una vez en la aplicación
@@ -142,7 +142,6 @@ void Lullaby::Application::init(const std::string& title, int width, int height,
 	_renderer->initFramebuffers();
 	_renderer->initSyncStructures();
 	_renderer->initPipelines();
-	_renderer->sampleModel();
 	fmt::print(fg(fmt::color::aquamarine), "Lullaby renderer initialized\n");
 }
 

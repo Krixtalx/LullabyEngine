@@ -8,7 +8,7 @@
 
 Lullaby::Camera::Camera() : Camera(1024, 576) {}
 
-Lullaby::Camera::Camera(uint16_t width, uint16_t height) : _backupCamera(nullptr), _name("New camera") {
+Lullaby::Camera::Camera(const uint16_t width, const uint16_t height) : _backupCamera(nullptr), _name("New camera") {
 	this->_properties._cameraType = CameraProjection::PERSPECTIVE;
 
 	this->_properties._eye = vec3(0.0f, 0.0f, 4.0f);
@@ -143,7 +143,7 @@ void Lullaby::Camera::updateMatrices() {
 
 // [Movements] 
 
-void Lullaby::Camera::boom(float speed) {
+void Lullaby::Camera::boom(const float speed) {
 	const glm::mat4 translationMatrix = glm::translate(mat4(1.0f), this->_properties._v * speed);			// Translation in y axis
 
 	this->_properties._eye = vec3(translationMatrix * vec4(this->_properties._eye, 1.0f));
@@ -152,11 +152,11 @@ void Lullaby::Camera::boom(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::crane(float speed) {
+void Lullaby::Camera::crane(const float speed) {
 	boom(-speed);					// Implemented as another method to take advantage of nomenclature
 }
 
-void Lullaby::Camera::dolly(float speed) {
+void Lullaby::Camera::dolly(const float speed) {
 	const mat4 translationMatrix = glm::translate(mat4(1.0f), -this->_properties._n * speed);			// Translation in z axis
 	this->_properties._eye = vec3(translationMatrix * vec4(this->_properties._eye, 1.0f));
 	this->_properties._lookAt = vec3(translationMatrix * vec4(this->_properties._lookAt, 1.0f));
@@ -164,7 +164,7 @@ void Lullaby::Camera::dolly(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::orbitXZ(float speed) {
+void Lullaby::Camera::orbitXZ(const float speed) {
 	const mat4 rotationMatrix = glm::rotate(mat4(1.0f), speed, this->_properties._u);					// We will pass over the scene, x or z axis could be used
 
 
@@ -180,7 +180,7 @@ void Lullaby::Camera::orbitXZ(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::orbitY(float speed) {
+void Lullaby::Camera::orbitY(const float speed) {
 	const mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), speed, this->_properties._v);
 
 	this->_properties._eye = vec3(rotationMatrix * vec4(this->_properties._eye - this->_properties._lookAt, 1.0f)) + this->_properties._lookAt;
@@ -195,7 +195,7 @@ void Lullaby::Camera::orbitY(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::pan(float speed) {
+void Lullaby::Camera::pan(const float speed) {
 	const mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), speed, this->_properties._v);
 
 	// Up vector can change, not in the original position tho. Example: orbit XZ (rotated camera) + pan
@@ -208,7 +208,7 @@ void Lullaby::Camera::pan(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::tilt(float speed) {
+void Lullaby::Camera::tilt(const float speed) {
 	const mat4 rotationMatrix = glm::rotate(mat4(1.0f), speed, this->_properties._u);
 
 	const auto n = glm::vec3(rotationMatrix * glm::vec4(this->_properties._n, 0.0f));
@@ -226,7 +226,7 @@ void Lullaby::Camera::tilt(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::truck(float speed) {
+void Lullaby::Camera::truck(const float speed) {
 	const mat4 translationMatrix = glm::translate(mat4(1.0f), this->_properties._u * speed);				// Translation in x axis
 
 	this->_properties._eye = vec3(translationMatrix * vec4(this->_properties._eye, 1.0f));
@@ -235,11 +235,11 @@ void Lullaby::Camera::truck(float speed) {
 	this->_properties.computeViewMatrices();
 }
 
-void Lullaby::Camera::zoom(float speed) {
+void Lullaby::Camera::zoom(const float speed) {
 	this->_properties.zoom(speed);
 }
 
-void Lullaby::Camera::rotate(float speed) {
+void Lullaby::Camera::rotate(const float speed) {
 	const auto rotationMatrix = glm::rotate(mat4(1.0f), speed, _properties._n);
 	_properties._v = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(this->_properties._v, 0.0f)));
 	_properties._u = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(this->_properties._u, 0.0f)));

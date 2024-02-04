@@ -3,15 +3,15 @@
 
 int main() {
 	auto app = Lullaby::Application();
-	fmt::print(fg(fmt::color::aquamarine), "Starting Lullaby Engine...\n");
+	print(fg(fmt::color::aquamarine), "Starting Lullaby Engine...\n");
 
 	try {
 		app.init();
 		app.registerLogo(R"(C:\GitHub\LullabyEngine\Logo.png)");
 		app.renderLoop();
 	} catch (const std::exception& exception) {
-		fmt::print(stderr, fg(fmt::color::red), "{}\n", exception.what());
+		print(stderr, fg(fmt::color::red), "{}\n", exception.what());
 	}
-	fmt::print(fg(fmt::color::aquamarine), "Closing Lullaby Engine...\n");
+	print(fg(fmt::color::aquamarine), "Closing Lullaby Engine...\n");
 	return 0;
 }

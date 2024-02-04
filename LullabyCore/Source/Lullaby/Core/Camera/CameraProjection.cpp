@@ -4,8 +4,8 @@
 // Static
 
 std::vector<std::shared_ptr<Lullaby::CameraProjection>> Lullaby::CameraProjection::_cameraProjection{
-	std::shared_ptr<Lullaby::CameraProjection>(new Lullaby::PerspectiveProjection()),
-	std::shared_ptr<Lullaby::CameraProjection>(new Lullaby::OrthographicProjection())
+	std::make_shared<Lullaby::PerspectiveProjection>(),
+	std::make_shared<Lullaby::OrthographicProjection>()
 };
 
 float Lullaby::CameraProjection::CameraProperties::computeAspect() const {
@@ -52,7 +52,7 @@ void Lullaby::CameraProjection::CameraProperties::computeViewMatrix() {
 	_viewMatrix = glm::lookAt(_eye, _lookAt, _up);
 }
 
-void Lullaby::CameraProjection::CameraProperties::zoom(float speed) {
+void Lullaby::CameraProjection::CameraProperties::zoom(const float speed) {
 	CameraProjection::_cameraProjection[this->_cameraType]->zoom(this, speed);
 }
 

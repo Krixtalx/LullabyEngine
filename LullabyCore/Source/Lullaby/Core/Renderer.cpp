@@ -3,8 +3,10 @@
 #define VMA_IMPLEMENTATION
 #include "Renderer.h"
 #include "VkBootstrap.h"
-#include "Shaders\PipelineBuilder.h"
 #include "VKInitializers.h"
+
+#include "DataContainers/Mesh.h"
+#include "Shaders\PipelineBuilder.h"
 
 
 void Lullaby::Renderer::initRenderer(GLFWwindow* window) {
@@ -147,13 +149,13 @@ void Lullaby::Renderer::initSwapchain(const ivec2 windowSize, bool addDeletors) 
 	};
 
 	//allocate and create the image
-	_memoryAllocator.createImage(&imgInfo, &imgAllocInfo, &_depthImage._image, &_depthImage._allocation, nullptr);
+	_memoryAllocator.createImage(&imgInfo, &imgAllocInfo, &_depthImage.image, &_depthImage.allocation, nullptr);
 
 	//build an image-view for the depth image to use for rendering
 	const vk::ImageViewCreateInfo imgViewInfo{
 		.sType = vk::StructureType::eImageViewCreateInfo,
 		.pNext = nullptr,
-		.image = _depthImage._image,
+		.image = _depthImage.image,
 		.viewType = vk::ImageViewType::e2D,
 		.format = _depthFormat,
 		.subresourceRange = {
@@ -171,7 +173,7 @@ void Lullaby::Renderer::initSwapchain(const ivec2 windowSize, bool addDeletors) 
 	if (addDeletors)
 		_mainDeletionQueue.addDeletor([&]() {
 		vkDestroyImageView(_device, _depthImageView, nullptr);
-		vmaDestroyImage(_memoryAllocator, _depthImage._image, _depthImage._allocation);
+		vmaDestroyImage(_memoryAllocator, _depthImage.image, _depthImage.allocation);
 			});
 }
 
@@ -385,10 +387,10 @@ void Lullaby::Renderer::initPipelines() {
 
 	auto vertexInputInfo = PipelineBuilder::defaultVertexInputInfo();
 	auto vertexDescription = Vertex::getVertexDescription();
-	vertexInputInfo.pVertexBindingDescriptions = vertexDescription._bindings.data();
-	vertexInputInfo.vertexBindingDescriptionCount = vertexDescription._bindings.size();
-	vertexInputInfo.pVertexAttributeDescriptions = vertexDescription._attributes.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription._attributes.size();
+	vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
+	vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
+	vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
 
 	PipelineInfo info{
 		._shaderStages = {
@@ -498,9 +500,9 @@ void Lullaby::Renderer::render() {
 
 	//bind the mesh vertex buffer with offset 0
 	vk::DeviceSize offset = 0;
-	/*vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer._buffer, &offset);
+	/*vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer.buffer, &offset);
 	vkCmdDraw(_mainCommandBuffer, _sampleMesh._vertices.size(), 1, 0, 0);*/
-	_mainCommandBuffer.bindVertexBuffers(0, 1, &_dragon._vertexBuffer._buffer, &offset);
+	_mainCommandBuffer.bindVertexBuffers(0, 1, &_dragon._vertexBuffer.buffer, &offset);
 	_mainCommandBuffer.draw(_dragon._vertices.size(), 1, 0, 0);
 
 	//finalize the render pass
@@ -542,27 +544,6 @@ void Lullaby::Renderer::render() {
 
 }
 
-void Lullaby::Renderer::sampleTriangle() {//make the array 3 vertices long
-	_sampleMesh._vertices.resize(3);
-
-	//vertex positions
-	_sampleMesh._vertices[0]._position = { 1.f, 1.f, 0.0f };
-	_sampleMesh._vertices[1]._position = { -1.f, 1.f, 0.0f };
-	_sampleMesh._vertices[2]._position = { 0.f,-1.f, 0.0f };
-
-	//vertex colors, all green
-	_sampleMesh._vertices[0]._color = { 0.f, 1.f, 0.0f }; //pure green
-	_sampleMesh._vertices[1]._color = { 0.f, 1.f, 0.0f }; //pure green
-	_sampleMesh._vertices[2]._color = { 0.f, 1.f, 0.0f }; //pure green
-
-	uploadGeometry(_sampleMesh);
-}
-
-void Lullaby::Renderer::sampleModel() {
-	_dragon.loadFromObj("../Assets/Models/Dragon.obj");
-	uploadGeometry(_dragon);
-}
-
 void Lullaby::Renderer::uploadGeometry(Mesh& mesh) {
 	//allocate vertex buffer
 	vk::BufferCreateInfo bufferInfo = {
@@ -579,19 +560,19 @@ void Lullaby::Renderer::uploadGeometry(Mesh& mesh) {
 
 	//allocate the buffer
 	Helpers::checkVulkanError(_memoryAllocator.createBuffer(&bufferInfo, &vmaallocInfo,
-		&mesh._vertexBuffer._buffer,
-		&mesh._vertexBuffer._allocation,
+		&mesh._vertexBuffer.buffer,
+		&mesh._vertexBuffer.allocation,
 		nullptr), "creating a memory buffer in GPU");
 
 	//add the destruction of triangle mesh buffer to the deletion queue
 	_mainDeletionQueue.addDeletor([=]() {
-		_memoryAllocator.destroyBuffer(mesh._vertexBuffer._buffer, mesh._vertexBuffer._allocation);
+		_memoryAllocator.destroyBuffer(mesh._vertexBuffer.buffer, mesh._vertexBuffer.allocation);
 		});
 
 	void* data;
-	_memoryAllocator.mapMemory(mesh._vertexBuffer._allocation, &data);
+	_memoryAllocator.mapMemory(mesh._vertexBuffer.allocation, &data);
 	memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
-	_memoryAllocator.unmapMemory(mesh._vertexBuffer._allocation);
+	_memoryAllocator.unmapMemory(mesh._vertexBuffer.allocation);
 }
 
 void Lullaby::Renderer::resizeCallback(GLFWwindow* window, int width, int height) {
@@ -603,7 +584,7 @@ void Lullaby::Renderer::resizeCallback(GLFWwindow* window, int width, int height
 			vkDestroyImageView(rendererPtr->_device, rendererPtr->_swapchainImageViews[i], nullptr);
 		}
 		vkDestroyImageView(rendererPtr->_device, rendererPtr->_depthImageView, nullptr);
-		vmaDestroyImage(rendererPtr->_memoryAllocator, rendererPtr->_depthImage._image, rendererPtr->_depthImage._allocation);
+		vmaDestroyImage(rendererPtr->_memoryAllocator, rendererPtr->_depthImage.image, rendererPtr->_depthImage.allocation);
 		vkDestroySwapchainKHR(rendererPtr->_device, rendererPtr->_swapchain, nullptr);
 		rendererPtr->_renderResolution.x = width;
 		rendererPtr->_renderResolution.y = height;

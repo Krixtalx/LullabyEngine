@@ -1,5 +1,5 @@
 #pragma once
-#include "Lullaby/Core/Scene.h"
+#include "Lullaby/Core/WorldManager.h"
 
 namespace Lullaby {
 	class Entity {

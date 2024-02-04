@@ -1,9 +1,11 @@
 #pragma once
 #include "GLFW/glfw3.h"
-#include "Lullaby/Utilities/Singleton.h"
 #include "vk_mem_alloc.hpp"
 #include "DeletionQueue.h"
 #include "DataContainers/Mesh.h"
+
+#include "Lullaby/Utilities/Singleton.h"
+#include "Lullaby/ECS/Components/Vulkan/GPUData.h"
 
 struct MeshPushConstants {
 	glm::vec4 data;
@@ -55,11 +57,9 @@ namespace Lullaby {
 
 		//Depth buffer
 		vk::ImageView _depthImageView = nullptr;
-		Types::AllocatedImage _depthImage;
+		AllocatedGpuImage _depthImage;
 		vk::Format _depthFormat;
 
-		//Sample model
-		Mesh _sampleMesh;
 		Mesh _dragon;
 
 		bool _isInitialized = false;
@@ -75,8 +75,6 @@ namespace Lullaby {
 
 		void render();
 
-		void sampleTriangle();
-		void sampleModel();
 		void uploadGeometry(Mesh& mesh);
 
 		static void resizeCallback(GLFWwindow* window, int width, int height);

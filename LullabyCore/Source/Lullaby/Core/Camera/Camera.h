@@ -6,7 +6,7 @@
 namespace Lullaby {
 	class Camera {
 		friend class GUI;
-		friend class Scene;
+		friend class WorldManager;
 
 	protected:
 		Camera* _backupCamera = nullptr;

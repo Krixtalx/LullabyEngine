@@ -1,13 +1,13 @@
 #pragma once
-#include "Types.h"
+#include "Lullaby/ECS/Components/Vulkan/GPUData.h"
 
 namespace Lullaby {
 	struct VertexInputDescription {
 
-		std::vector<vk::VertexInputBindingDescription> _bindings;
-		std::vector<vk::VertexInputAttributeDescription> _attributes;
+		std::vector<vk::VertexInputBindingDescription> bindings;
+		std::vector<vk::VertexInputAttributeDescription> attributes;
 
-		vk::PipelineVertexInputStateCreateFlags _flags;
+		vk::PipelineVertexInputStateCreateFlags flags;
 	};
 	struct Vertex {
 		glm::vec3 _position;
@@ -21,8 +21,6 @@ namespace Lullaby {
 
 	public:
 		std::vector<Vertex> _vertices;
-		Types::AllocatedBuffer _vertexBuffer;
-
-		bool loadFromObj(const std::string& filename);
+		AllocatedGpuBuffer _vertexBuffer;
 	};
 }
