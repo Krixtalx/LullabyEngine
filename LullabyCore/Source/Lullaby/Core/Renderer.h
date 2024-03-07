@@ -2,14 +2,14 @@
 #include "GLFW/glfw3.h"
 #include "vk_mem_alloc.hpp"
 #include "DeletionQueue.h"
-#include "DataContainers/Mesh.h"
 
 #include "Lullaby/Utilities/Singleton.h"
 #include "Lullaby/ECS/Components/Vulkan/GPUData.h"
+#include "WorldManager.h"
 
 struct MeshPushConstants {
-	glm::vec4 data;
-	glm::mat4 renderMatrix;
+	vec4 data;
+	mat4 renderMatrix;
 };
 
 namespace Lullaby {
@@ -20,9 +20,9 @@ namespace Lullaby {
 		vk::PhysicalDevice _choosenGPU = nullptr;
 		vk::Device _device = nullptr; //Vulkan device for commands
 		vk::Queue _graphicsQueue = nullptr; //queue we will submit to
-		uint32_t _graphicsQueueFamily = 0; //family of that queue
+		u32 _graphicsQueueFamily = 0; //family of that queue
 		vk::Queue _computeQueue = nullptr; //queue we will submit to
-		uint32_t _computeQueueFamily = 0; //family of that queue
+		u32 _computeQueueFamily = 0; //family of that queue
 
 		//Swapchain
 		vk::SurfaceKHR _surface = nullptr;
@@ -34,8 +34,9 @@ namespace Lullaby {
 
 		//GPU Commands
 		vk::CommandPool _graphicsCommandPool = nullptr; //the command pool for our graphics commands
-		//vk::CommandPool _computeCommandPool; //the command pool for our compute commands
-		vk::CommandBuffer _mainCommandBuffer = nullptr; //the buffer we will record into
+		vk::CommandPool _computeCommandPool = nullptr; //the command pool for our compute commands
+		vk::CommandBuffer _graphicsCommandBuffer = nullptr; //the buffer we will record into
+		vk::CommandBuffer _computeCommandBuffer = nullptr; //the buffer we will record compute commands into
 
 		//Render pass
 		vk::RenderPass _mainRenderPass = nullptr;
@@ -60,10 +61,9 @@ namespace Lullaby {
 		AllocatedGpuImage _depthImage;
 		vk::Format _depthFormat;
 
-		Mesh _dragon;
-
 		bool _isInitialized = false;
 		uint64_t _frameNumber = 0;
+
 	public:
 		void initRenderer(GLFWwindow* window);
 		void initSwapchain(ivec2 windowSize, bool addDeletors = true);
@@ -74,8 +74,9 @@ namespace Lullaby {
 		void initPipelines();
 
 		void render();
+		void uploadGeometry(MeshData& mesh);
 
-		void uploadGeometry(Mesh& mesh);
+		//void uploadGeometry(Mesh& mesh);
 
 		static void resizeCallback(GLFWwindow* window, int width, int height);
 		void releaseResources();

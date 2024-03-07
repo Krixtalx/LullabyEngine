@@ -35,7 +35,7 @@ vk::Pipeline Lullaby::PipelineBuilder::buildPipeline(PipelineInfo& pipelineInfo,
 	const vk::GraphicsPipelineCreateInfo pipelineCreateInfo = {
 		.sType = vk::StructureType::eGraphicsPipelineCreateInfo,
 		.pNext = nullptr,
-		.stageCount = static_cast<uint32_t>(pipelineInfo._shaderStages.size()),
+		.stageCount = static_cast<u32>(pipelineInfo._shaderStages.size()),
 		.pStages = pipelineInfo._shaderStages.data(),
 		.pVertexInputState = &pipelineInfo._vertexInputInfo,
 		.pInputAssemblyState = &pipelineInfo._inputAssembly,
@@ -68,7 +68,7 @@ vk::ShaderModule Lullaby::PipelineBuilder::loadShaderModule(const vk::Device& de
 	const size_t fileSize = file.tellg();
 
 	//spirv expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file
-	std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
+	std::vector<u32> buffer(fileSize / sizeof(u32));
 
 	//put file cursor at beginning
 	file.seekg(0);
@@ -84,7 +84,7 @@ vk::ShaderModule Lullaby::PipelineBuilder::loadShaderModule(const vk::Device& de
 		.sType = vk::StructureType::eShaderModuleCreateInfo,
 		.pNext = nullptr,
 		//codeSize has to be in bytes, so multiply the ints in the buffer by size of int to know the real size of the buffer
-		.codeSize = buffer.size() * sizeof(uint32_t),
+		.codeSize = buffer.size() * sizeof(u32),
 		.pCode = buffer.data()
 	};
 

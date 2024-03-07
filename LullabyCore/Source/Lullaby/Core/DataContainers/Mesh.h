@@ -16,11 +16,4 @@ namespace Lullaby {
 
 		static VertexInputDescription getVertexDescription();
 	};
-
-	class Mesh {
-
-	public:
-		std::vector<Vertex> _vertices;
-		AllocatedGpuBuffer _vertexBuffer;
-	};
 }

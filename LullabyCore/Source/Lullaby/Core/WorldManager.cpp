@@ -1,11 +1,19 @@
 #include "LullabyPch.h"
 #include "WorldManager.h"
 
-#include "Lullaby/ECS/Entity.h"
-
 namespace Lullaby {
-	Entity WorldManager::createEntity() const {
-		const auto newEntity = _worlds[_currentWorld].entity();
-		return { newEntity };
+	WorldManager::WorldManager() {
+		_worlds.emplace_back();
+		_currentWorld = 0;
+	}
+
+
+	flecs::entity WorldManager::createEntity() const {
+		return _worlds[_currentWorld].entity();
+	}
+
+	flecs::world& WorldManager::getWorld() {
+		if (!_worlds.empty())
+			return _worlds[_currentWorld];
 	}
 }

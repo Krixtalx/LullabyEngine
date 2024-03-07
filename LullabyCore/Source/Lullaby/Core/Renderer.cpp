@@ -11,9 +11,6 @@
 
 void Lullaby::Renderer::initRenderer(GLFWwindow* window) {
 	if (!_isInitialized) {
-		/*if (volkInitialize() != VK_SUCCESS) {
-			throw std::runtime_error("Problem while initializing Volk");
-		}*/
 		vkb::InstanceBuilder builder;
 
 		//make the Vulkan instance, with basic debug features
@@ -27,7 +24,7 @@ void Lullaby::Renderer::initRenderer(GLFWwindow* window) {
 
 		//store the instance
 		_instance = vkbInstance.instance;
-		/*volkLoadInstance(_instance);*/
+
 		//store the debug messenger
 		_debugMesseger = vkbInstance.debug_messenger;
 
@@ -117,7 +114,7 @@ void Lullaby::Renderer::initSwapchain(const ivec2 windowSize, bool addDeletors) 
 	if (addDeletors)
 		_mainDeletionQueue.addDeletor([&]() {
 		vkDestroySwapchainKHR(_device, _swapchain, nullptr);
-			});
+	});
 
 	//depth image size will match the window
 	vk::Extent3D depthImageExtent = {
@@ -174,14 +171,14 @@ void Lullaby::Renderer::initSwapchain(const ivec2 windowSize, bool addDeletors) 
 		_mainDeletionQueue.addDeletor([&]() {
 		vkDestroyImageView(_device, _depthImageView, nullptr);
 		vmaDestroyImage(_memoryAllocator, _depthImage.image, _depthImage.allocation);
-			});
+	});
 }
 
 void Lullaby::Renderer::initCommands() {
 	//create a command pool for commands submitted to the graphics queue.
 	//the command pool will be one that can submit graphics commands
 	//we also want the pool to allow for resetting of individual command buffers
-	const vk::CommandPoolCreateInfo commandPoolInfo = {
+	vk::CommandPoolCreateInfo commandPoolInfo = {
 		.sType = vk::StructureType::eCommandPoolCreateInfo,
 		.pNext = nullptr,
 		.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
@@ -189,13 +186,18 @@ void Lullaby::Renderer::initCommands() {
 	};
 
 	//Create graphics command pool
-	Helpers::checkVulkanError(_device.createCommandPool(&commandPoolInfo, nullptr, &_graphicsCommandPool), "creating command pool");
+	Helpers::checkVulkanError(_device.createCommandPool(&commandPoolInfo, nullptr, &_graphicsCommandPool), "creating graphics command pool");
+
+	commandPoolInfo.queueFamilyIndex = _computeQueueFamily;
+
+	//Create compute command pool
+	Helpers::checkVulkanError(_device.createCommandPool(&commandPoolInfo, nullptr, &_computeCommandPool), "creating compute command pool");
 
 	//allocate the default command buffer that we will use for rendering
 	//commands will be made from our _graphicsCommandPool
 	//we will allocate 1 command buffer
 	// command level is Primary
-	const vk::CommandBufferAllocateInfo commandAllocInfo = {
+	vk::CommandBufferAllocateInfo commandAllocInfo = {
 		.sType = vk::StructureType::eCommandBufferAllocateInfo,
 		.pNext = nullptr,
 		.commandPool = _graphicsCommandPool,
@@ -203,10 +205,16 @@ void Lullaby::Renderer::initCommands() {
 		.commandBufferCount = 1
 	};
 
-	Helpers::checkVulkanError(_device.allocateCommandBuffers(&commandAllocInfo, &_mainCommandBuffer), "creating command buffer");
+	Helpers::checkVulkanError(_device.allocateCommandBuffers(&commandAllocInfo, &_graphicsCommandBuffer), "creating graphics command buffer");
 	_mainDeletionQueue.addDeletor([=]() {
 		_device.destroyCommandPool(_graphicsCommandPool);
-		});
+	});
+
+	commandAllocInfo.commandPool = _computeCommandPool;
+	Helpers::checkVulkanError(_device.allocateCommandBuffers(&commandAllocInfo, &_computeCommandBuffer), "creating compute command buffer");
+	_mainDeletionQueue.addDeletor([=]() {
+		_device.destroyCommandPool(_computeCommandPool);
+	});
 }
 
 void Lullaby::Renderer::initFramebuffers(bool addDeletors) {
@@ -222,7 +230,7 @@ void Lullaby::Renderer::initFramebuffers(bool addDeletors) {
 	};
 
 	//grab how many images we have in the swapchain
-	const uint32_t swapchainImageCount = _swapchainImages.size();
+	const u32 swapchainImageCount = _swapchainImages.size();
 	_framebuffers = std::vector<vk::Framebuffer>(swapchainImageCount);
 
 	//create framebuffers for each of the swapchain image views
@@ -234,7 +242,7 @@ void Lullaby::Renderer::initFramebuffers(bool addDeletors) {
 			_mainDeletionQueue.addDeletor([&]() {
 			_device.destroyFramebuffer(_framebuffers[i]);
 			_device.destroyImageView(_swapchainImageViews[i]);
-				});
+		});
 	}
 
 }
@@ -320,7 +328,7 @@ void Lullaby::Renderer::initDefaultRenderpass() {
 
 	_mainDeletionQueue.addDeletor([=]() {
 		_device.destroyRenderPass(_mainRenderPass);
-		});
+	});
 }
 
 void Lullaby::Renderer::initSyncStructures() {
@@ -346,7 +354,7 @@ void Lullaby::Renderer::initSyncStructures() {
 	_mainDeletionQueue.addDeletor([=]() {
 		_device.destroySemaphore(_presentSemaphore);
 		_device.destroySemaphore(_renderSemaphore);
-		});
+	});
 }
 
 void Lullaby::Renderer::initPipelines() {
@@ -426,7 +434,7 @@ void Lullaby::Renderer::initPipelines() {
 
 		//destroy the pipeline layout that they use
 		vkDestroyPipelineLayout(_device, _meshPipelineLayout, nullptr);
-		});
+	});
 }
 
 void Lullaby::Renderer::render() {
@@ -435,10 +443,10 @@ void Lullaby::Renderer::render() {
 	Helpers::checkVulkanError(_device.resetFences(1, &_renderFence), "reseting render fence");
 
 	//request image from the swapchain, one second timeout
-	uint32_t swapchainImageIndex;
+	u32 swapchainImageIndex;
 	Helpers::checkVulkanError(_device.acquireNextImageKHR(_swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex), "acquiring next image from swapchain");
 
-	_mainCommandBuffer.reset();
+	_graphicsCommandBuffer.reset();
 	//Helpers::checkVulkanError(, "reseting command buffer");
 
 	//Begin the command buffer recording. We will use this command buffer exactly once, so we want to let Vulkan know that
@@ -449,7 +457,7 @@ void Lullaby::Renderer::render() {
 		.pInheritanceInfo = nullptr
 	};
 
-	Helpers::checkVulkanError(_mainCommandBuffer.begin(&cmdBeginInfo), "beginning command buffer recording");
+	Helpers::checkVulkanError(_graphicsCommandBuffer.begin(&cmdBeginInfo), "beginning command buffer recording");
 
 	/*VkClearValue clearColor;
 	clearColor = { { 0.05f, 0.05f, 0.05f, 1.0f } };
@@ -475,8 +483,8 @@ void Lullaby::Renderer::render() {
 		.clearValueCount = 2,
 		.pClearValues = clearValues.data(),
 	};
-	_mainCommandBuffer.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
-	_mainCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, _meshPipeline);
+	_graphicsCommandBuffer.beginRenderPass(&rpInfo, vk::SubpassContents::eInline);
+	_graphicsCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, _meshPipeline);
 
 	//make a model view matrix for rendering the object
 	//camera position
@@ -496,18 +504,24 @@ void Lullaby::Renderer::render() {
 	constants.renderMatrix = mesh_matrix;
 
 	//upload the matrix to the GPU via push constants
-	_mainCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);
+	_graphicsCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);
 
 	//bind the mesh vertex buffer with offset 0
 	vk::DeviceSize offset = 0;
-	/*vkCmdBindVertexBuffers(_mainCommandBuffer, 0, 1, &_sampleMesh._vertexBuffer.buffer, &offset);
-	vkCmdDraw(_mainCommandBuffer, _sampleMesh._vertices.size(), 1, 0, 0);*/
-	_mainCommandBuffer.bindVertexBuffers(0, 1, &_dragon._vertexBuffer.buffer, &offset);
-	_mainCommandBuffer.draw(_dragon._vertices.size(), 1, 0, 0);
+	/*_mainCommandBuffer.bindVertexBuffers(0, 1, &_dragon._vertexBuffer.buffer, &offset);
+	_mainCommandBuffer.draw(_dragon._vertices.size(), 1, 0, 0);*/
+
+	//Collects entities meshes from world and render them
+	WorldManager::ptr->getWorld().each([&](flecs::entity e, MeshData& meshData) {
+		//bind the mesh vertex buffer with offset 0
+		_graphicsCommandBuffer.bindVertexBuffers(0, 1, &meshData.vertexBuffer.buffer, &offset);
+		_graphicsCommandBuffer.draw(meshData.vertex.size(), 1, 0, 0);
+	});
+
 
 	//finalize the render pass
-	_mainCommandBuffer.endRenderPass();
-	_mainCommandBuffer.end();
+	_graphicsCommandBuffer.endRenderPass();
+	_graphicsCommandBuffer.end();
 	//Helpers::checkVulkanError(_mainCommandBuffer.end(), "ending command buffer");
 
 	//prepare the submission to the queue.
@@ -521,7 +535,7 @@ void Lullaby::Renderer::render() {
 		.pWaitSemaphores = &_presentSemaphore,
 		.pWaitDstStageMask = &waitStage,
 		.commandBufferCount = 1,
-		.pCommandBuffers = &_mainCommandBuffer,
+		.pCommandBuffers = &_graphicsCommandBuffer,
 		.signalSemaphoreCount = 1,
 		.pSignalSemaphores = &_renderSemaphore,
 	};
@@ -544,11 +558,11 @@ void Lullaby::Renderer::render() {
 
 }
 
-void Lullaby::Renderer::uploadGeometry(Mesh& mesh) {
+void Lullaby::Renderer::uploadGeometry(MeshData& mesh) {
 	//allocate vertex buffer
 	vk::BufferCreateInfo bufferInfo = {
 		.sType = vk::StructureType::eBufferCreateInfo,
-		.size = mesh._vertices.size() * sizeof(Vertex),
+		.size = mesh.vertex.size() * sizeof(vec3),
 		.usage = vk::BufferUsageFlagBits::eVertexBuffer,
 		.sharingMode = vk::SharingMode::eExclusive
 	};
@@ -560,19 +574,19 @@ void Lullaby::Renderer::uploadGeometry(Mesh& mesh) {
 
 	//allocate the buffer
 	Helpers::checkVulkanError(_memoryAllocator.createBuffer(&bufferInfo, &vmaallocInfo,
-		&mesh._vertexBuffer.buffer,
-		&mesh._vertexBuffer.allocation,
+		&mesh.vertexBuffer.buffer,
+		&mesh.vertexBuffer.allocation,
 		nullptr), "creating a memory buffer in GPU");
 
 	//add the destruction of triangle mesh buffer to the deletion queue
 	_mainDeletionQueue.addDeletor([=]() {
-		_memoryAllocator.destroyBuffer(mesh._vertexBuffer.buffer, mesh._vertexBuffer.allocation);
+		_memoryAllocator.destroyBuffer(mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
 		});
 
 	void* data;
-	_memoryAllocator.mapMemory(mesh._vertexBuffer.allocation, &data);
-	memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
-	_memoryAllocator.unmapMemory(mesh._vertexBuffer.allocation);
+	_memoryAllocator.mapMemory(mesh.vertexBuffer.allocation, &data);
+	memcpy(data, mesh.vertex.data(), mesh.vertex.size() * sizeof(vec3));
+	_memoryAllocator.unmapMemory(mesh.vertexBuffer.allocation);
 }
 
 void Lullaby::Renderer::resizeCallback(GLFWwindow* window, int width, int height) {

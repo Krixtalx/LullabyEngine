@@ -4,6 +4,7 @@
 #include <GLFW/glfw3native.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "Lullaby/IO/ObjLoader.h"
 
 WNDPROC original_proc;
 
@@ -142,6 +143,8 @@ void Lullaby::Application::init(const std::string& title, const int width, const
 	_renderer->initFramebuffers();
 	_renderer->initSyncStructures();
 	_renderer->initPipelines();
+	WorldManager::getInstance();
+	Lullaby::ObjLoader::parse(R"(C:\GitHub\LullabyEngine\Assets\Dragon.obj)");
 	fmt::print(fg(fmt::color::aquamarine), "Lullaby renderer initialized\n");
 }
 

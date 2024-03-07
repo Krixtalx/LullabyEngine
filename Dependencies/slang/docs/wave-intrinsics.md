@@ -17,9 +17,9 @@ In the [DXC Wiki](https://github.com/Microsoft/DirectXShaderCompiler/wiki/Wave-I
 
 > These intrinsics are dependent on active lanes and therefore flow control. In the model of this document, implementations
 > must enforce that the number of active lanes exactly corresponds to the programmer’s view of flow control.
-
+ 
 In practice this appears to imply that the programming model is that all lanes operate in 'lock step'. That the 'active lanes' are the lanes doing processing at a particular point in the control flow. On some hardware this may match how processing actually works. There is also a large amount of hardware in the field that doesn't follow this model, and allows lanes to diverge and not necessarily on flow control. On this style of hardware Active intrinsics may act to also converge lanes to give the appearance of 'in step' ness. 
-
+ 
 ## WaveMask
 
 The WaveMask intrinsics take an explicit mask of lanes to operate on, in the same vein as CUDA. Requesting data from a from an inactive lane, can lead to undefined behavior, that includes locking up the shader. The WaveMask is an integer type that can hold the maximum amount of active lanes for this model - currently 32. In the future the WaveMask type may be made an opaque type, but can largely be operated on as if it is an integer.
@@ -45,33 +45,33 @@ void computeMain(uint3 dispatchThreadID : SV_DispatchThreadID)
     // It's common to launch such that all lanes are active - with CUDA this would mean 32 lanes. 
     // Here the launch only has 4 lanes active, and so the initial mask is 0xf.
     const WaveMask mask0 = 0xf;
-
+    
     int idx = int(dispatchThreadID.x);
-
+    
     int value = 0;
-
+    
     // When there is a conditional/flow control we typically need to work out a new mask.
     // This can be achieved by calling WaveMaskBallot with the current mask, and the condition
     // used in the flow control - here the subsequent 'if'.
     const WaveMask mask1 = WaveMaskBallot(mask0, idx == 2);
-
+    
     if (idx == 2)
     {
         // At this point the mask is `mask1`, although no WaveMask intrinsics are used along this path, 
         // so it's not used.
-
+    
         // diverge
         return;
     }
-
+    
     // If we get here, the active lanes must be the opposite of mask1 (because we took the other side of the condition), but cannot include
     // any lanes which were not active before. We can calculate this as mask0 & ~mask1.
-
+    
     const WaveMask mask2 = mask0 & ~mask1;
-
+    
     // mask2 holds the correct active mask to use with WaveMaskMin
     value = WaveMaskMin(mask2, idx + 1);
-
+    
     // Write out the result
     outputBuffer[idx] = value;
 }
@@ -88,17 +88,17 @@ RWStructuredBuffer<int> outputBuffer;
 void computeMain(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     int idx = int(dispatchThreadID.x);
-
+    
     int value = 0;
-
+    
     if (idx == 2)
     {    
         // diverge
         return;
     }
-
+    
     value = WaveActiveMin(idx + 1);
-
+    
     // Write out the result
     outputBuffer[idx] = value;
 }
@@ -266,9 +266,9 @@ void GroupMemoryBarrierWithWaveMaskSync(WaveMask mask);
 ```
 
 Same as GroupMemoryBarrierWithWaveSync but takes a mask of active lanes to sync with. 
-
+ 
 The intrinsics that make up the Slang `WaveMask` extension. 
-
+ 
 ```
 // Lane info
 
@@ -338,3 +338,5 @@ T WaveMaskReadLaneAt<T>(WaveMask mask, T value, int lane);
 
 T WaveMaskShuffle<T>(WaveMask mask, T value, int lane);
 ```
+
+ 

@@ -1,7 +1,7 @@
 #include "LullabyPch.h"
 #include "VKInitializers.h"
 
-VkCommandPoolCreateInfo Lullaby::Helpers::commandPoolCreateInfo(const uint32_t& queueFamily, const VkCommandPoolCreateFlags& vkFlags) {
+VkCommandPoolCreateInfo Lullaby::Helpers::commandPoolCreateInfo(const u32& queueFamily, const VkCommandPoolCreateFlags& vkFlags) {
 	const VkCommandPoolCreateInfo info = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.pNext = nullptr,
@@ -11,7 +11,7 @@ VkCommandPoolCreateInfo Lullaby::Helpers::commandPoolCreateInfo(const uint32_t& 
 	return info;
 }
 
-VkCommandBufferAllocateInfo Lullaby::Helpers::commandBufferAllocateInfo(const VkCommandPool& commandPool, const uint32_t& count, const VkCommandBufferLevel level) {
+VkCommandBufferAllocateInfo Lullaby::Helpers::commandBufferAllocateInfo(const VkCommandPool& commandPool, const u32& count, const VkCommandBufferLevel level) {
 	const VkCommandBufferAllocateInfo info = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext = nullptr,

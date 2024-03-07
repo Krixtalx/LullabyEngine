@@ -21,7 +21,7 @@ Lullaby::VertexInputDescription Lullaby::Vertex::getVertexDescription() {
 	};
 	description.attributes.push_back(positionAttribute);
 
-	const vk::VertexInputAttributeDescription normalAttribute = {
+	/*const vk::VertexInputAttributeDescription normalAttribute = {
 		.location = 1,
 		.binding = 0,
 		.format = vk::Format::eR32G32B32Sfloat,
@@ -35,7 +35,7 @@ Lullaby::VertexInputDescription Lullaby::Vertex::getVertexDescription() {
 		.format = vk::Format::eR32G32B32Sfloat,
 		.offset = offsetof(Vertex, _color)
 	};
-	description.attributes.push_back(colorAttribute);
+	description.attributes.push_back(colorAttribute);*/
 
 	return description;
 }

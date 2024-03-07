@@ -3,6 +3,8 @@
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include "Lullaby/Core/Renderer.h"
+#include "Lullaby/Core/WorldManager.h"
 
 #include "Lullaby/ECS/Components/MeshData.h"
 
@@ -39,7 +41,6 @@ namespace Lullaby {
 				// Loop over faces(polygon)
 				size_t index_offset = 0;
 				for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-
 					//hardcode loading to triangles
 					int fv = 3;
 
@@ -63,6 +64,10 @@ namespace Lullaby {
 					index_offset += fv;
 				}
 			}
+			Renderer::ptr->uploadGeometry(meshData);
+			auto entity = WorldManager::ptr->createEntity();
+			entity.add<MeshData>();
+			entity.set<MeshData>(meshData);
 		}
 	}
 }

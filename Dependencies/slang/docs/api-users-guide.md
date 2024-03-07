@@ -237,9 +237,9 @@ When looking at the whole program (`slang::ShaderReflection`) we can enumerate g
 unsigned parameterCount = shaderReflection->getParameterCount();
 for(unsigned pp = 0; pp < parameterCount; pp++)
 {
-    slang::VariableLayoutReflection* parameter =
-        shaderReflection->getParameterByIndex(pp);
-    // ...
+	slang::VariableLayoutReflection* parameter =
+	    shaderReflection->getParameterByIndex(pp);
+	// ...
 }
 ```
 
@@ -249,9 +249,9 @@ We can also enumerate the compile entry points, in order to inspect their parame
 SlangUInt entryPointCount = shaderRefelction->getEntryPointCount();
 for(SlangUInt ee = 0; ee < entryPointCount; ee++)
 {
-    slang::EntryPointReflection* entryPoint =
-        shaderReflection->getEntryPointByIndex(ee);
-    // ...
+	slang::EntryPointReflection* entryPoint =
+	    shaderReflection->getEntryPointByIndex(ee);
+	// ...
 }
 ```
 
@@ -295,12 +295,12 @@ If `getCategory()` returns `slang::ParameterCategory::Mixed`, then the user can 
 unsigned categoryCount = parameter->getCategoryCount();
 for(unsigned cc = 0; cc < categoryCount; cc++)
 {
-    slang::ParameterCategory category = parameter->getCategoryByIndex(cc);
+	slang::ParameterCategory category = parameter->getCategoryByIndex(cc);
 
-    size_t offsetForCategory = parameter->getOffset(category);
-    size_t spaceForCategory = parameter->getBindingSpace(category);
+	size_t offsetForCategory = parameter->getOffset(category);
+	size_t spaceForCategory = parameter->getBindingSpace(category);
 
-    // ...
+	// ...
 }
 ```
 
@@ -364,8 +364,8 @@ If you have a type layout with kind `Struct`, you can query information about th
 unsigned fieldCount = typeLayout->getFieldCount();
 for(unsigned ff = 0; ff < fieldCount; ff++)
 {
-    VariableLayoutReflection* field = typeLayout->getFieldByIndex(ff);
-    // ...
+	VariableLayoutReflection* field = typeLayout->getFieldByIndex(ff);
+	// ...
 }
 ```
 
@@ -394,9 +394,9 @@ You can also enumerate the parameters of the entry point (that is, those that we
 unsigned parameterCount = entryPoint->getParameterCount();
 for(unsigned pp = 0; pp < parameterCount; pp++)
 {
-    slang::VariableLayoutReflection* parameter =
-        entryPoint->getParameterByIndex(pp);
-    // ...
+	slang::VariableLayoutReflection* parameter =
+	    entryPoint->getParameterByIndex(pp);
+	// ...
 }
 ```
 
@@ -416,8 +416,8 @@ Slang provides a simple API for enumerating these, on a successful compile:
 int depCount = spGetDependencyFileCount(request);
 for(int dep = 0; dep < depCount; dep++)
 {
-    char const* depPath = spGetDependencyFilePath(request, dep);
-    // ...
+	char const* depPath = spGetDependencyFilePath(request, dep);
+	// ...
 }
 ```
 

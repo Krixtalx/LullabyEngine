@@ -104,6 +104,7 @@ A structure is laid out by initializing a counter for each resource type, and th
 
 * Add the resource usage of the field to the counters
 
+
 An important wrinkle is that when doing layout for HLSL, we must ensure that if a field with uniform data that is smaller than 16 bytes would straddle a 16-byte boundary, we advance to the next 16-byte aligned offset.
 
 The overall alignment of a `struct` is the maximum alignment of its fields or the default alignment (if it is larger).
@@ -215,9 +216,9 @@ One important consequence to understand is that given a type like:
 ```hlsl
 struct MyStuff<T>
 {
-    int a;
-    T b;
-    int c;
+	int a;
+	T b;
+	int c;
 }
 ```
 
