@@ -144,7 +144,7 @@ void Lullaby::Application::init(const std::string& title, const int width, const
 	_renderer->initSyncStructures();
 	_renderer->initPipelines();
 	WorldManager::getInstance();
-	Lullaby::ObjLoader::parse(R"(C:\GitHub\LullabyEngine\Assets\Dragon.obj)");
+	Lullaby::ObjLoader::parse(R"(C:\GitHub\LullabyEngine\Assets\Models\Dragon.obj)");
 	fmt::print(fg(fmt::color::aquamarine), "Lullaby renderer initialized\n");
 }
 

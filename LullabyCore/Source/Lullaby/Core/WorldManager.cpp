@@ -5,18 +5,16 @@
 
 namespace Lullaby {
 	WorldManager::WorldManager() {
-		_worlds.emplace_back();
-		_currentWorld = 0;
 	}
 
 	flecs::entity WorldManager::createEntity() const {
-		auto entity = _worlds[_currentWorld].entity();
+		auto entity = gameWorld.entity();
 		entity.add<Transform>();
 		return entity;
 	}
 
-	flecs::world& WorldManager::getWorld() {
-		if (!_worlds.empty())
-			return _worlds[_currentWorld];
+	flecs::entity WorldManager::createEditorEntity() const {
+		auto entity = editorWorld.entity();
+		return entity;
 	}
 }

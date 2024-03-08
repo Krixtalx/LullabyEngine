@@ -1,14 +1,16 @@
 #pragma once
-#include <glm/fwd.hpp>
+
+#include <glm/gtx/quaternion.hpp>
 namespace Lullaby {
 	struct Transform {
-		vec3 position;
-		quat rotation;
-		vec3 scale;
+		vec3 position = { 0,0,0 };
+		quat rotation = {};
+		vec3 scale = { 1,1,1 };
 
 		void move(vec3 movement);
 		void rotate(float angle, vec3 axis);
 		void rescale(vec3 newScale);
+		mat4 getMatrix() const;
 	};
 
 	inline void Transform::move(const vec3 movement) {
@@ -23,5 +25,7 @@ namespace Lullaby {
 		scale = newScale;
 	}
 
-
+	inline mat4 Transform::getMatrix() const {
+		return glm::translate(mat4(1.0f), position) * glm::toMat4(rotation) * glm::scale(mat4(1.0f), scale);
+	}
 }

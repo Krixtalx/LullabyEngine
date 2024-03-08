@@ -6,6 +6,7 @@
 #include "VKInitializers.h"
 
 #include "DataContainers/Mesh.h"
+#include "Lullaby/ECS/Components/Transform.h"
 #include "Shaders\PipelineBuilder.h"
 
 
@@ -488,17 +489,13 @@ void Lullaby::Renderer::render() {
 	//camera projection
 	glm::mat4 projection = glm::perspective(glm::radians(70.f), 1700.f / 900.f, 0.1f, 200.0f);
 	projection[1][1] *= -1;
-	//model rotation
-	glm::mat4 model = glm::rotate(glm::mat4{ 1.0f }, glm::radians(++_frameNumber * 0.4f), glm::vec3(0, 1, 0));
 
 	//calculate final mesh matrix
 	glm::mat4 camMatrix = projection * view;
 
 	MeshPushConstants constants;
-	constants.renderMatrix = camMatrix;
+	//constants.renderMatrix = camMatrix;
 
-	//upload the matrix to the GPU via push constants
-	_graphicsCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);
 
 	//bind the mesh vertex buffer with offset 0
 	vk::DeviceSize offset = 0;
@@ -506,7 +503,10 @@ void Lullaby::Renderer::render() {
 	_mainCommandBuffer.draw(_dragon._vertices.size(), 1, 0, 0);*/
 
 	//Collects entities meshes from world and render them
-	WorldManager::ptr->getWorld().each([&](flecs::entity e, MeshData& meshData) {
+	WorldManager::ptr->getGameWorld().each([&](flecs::entity e, Transform& transform, MeshData& meshData) {
+		constants.renderMatrix = camMatrix * transform.getMatrix();
+		//upload the matrix to the GPU via push constants
+		_graphicsCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);
 		//bind the mesh vertex buffer with offset 0
 		_graphicsCommandBuffer.bindVertexBuffers(0, 1, &meshData.vertexBuffer.buffer, &offset);
 		_graphicsCommandBuffer.draw(meshData.vertex.size(), 1, 0, 0);

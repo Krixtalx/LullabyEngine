@@ -10,14 +10,16 @@ namespace Lullaby {
 
 	class WorldManager : public Singleton<WorldManager> {
 		friend class Renderer;
-		std::vector<flecs::world> _worlds;
-		u16 _currentWorld;
+		flecs::world gameWorld;
+		flecs::world editorWorld;
 
-		flecs::query<MeshData> _meshQuery;
 	public:
 		WorldManager();
 		WorldManager(const WorldManager&) = delete;
 		flecs::entity createEntity() const;
-		flecs::world& getWorld();
+		flecs::entity createEditorEntity() const;
+
+		flecs::world& getGameWorld() { return gameWorld; }
+		flecs::world& getEditorWorld() { return editorWorld; }
 	};
 }
