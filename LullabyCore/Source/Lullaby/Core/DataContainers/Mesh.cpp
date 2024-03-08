@@ -7,7 +7,7 @@ Lullaby::VertexInputDescription Lullaby::Vertex::getVertexDescription() {
 	//we will have just 1 vertex buffer binding, with a per-vertex rate
 	constexpr vk::VertexInputBindingDescription mainBinding = {
 		.binding = 0,
-		.stride = sizeof(Vertex),
+		.stride = sizeof(vec3),
 		.inputRate = vk::VertexInputRate::eVertex
 	};
 

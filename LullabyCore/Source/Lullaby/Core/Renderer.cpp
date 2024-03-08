@@ -459,12 +459,6 @@ void Lullaby::Renderer::render() {
 
 	Helpers::checkVulkanError(_graphicsCommandBuffer.begin(&cmdBeginInfo), "beginning command buffer recording");
 
-	/*VkClearValue clearColor;
-	clearColor = { { 0.05f, 0.05f, 0.05f, 1.0f } };
-
-	VkClearValue clearDepth;
-	clearDepth.depthStencil.depth = 1.f;*/
-
 	std::array<vk::ClearValue, 2> clearValues;
 	clearValues[0].color = { 0.05f, 0.05f, 0.05f, 1.0f };
 	clearValues[1].depthStencil.depth = 1.f;
@@ -498,10 +492,10 @@ void Lullaby::Renderer::render() {
 	glm::mat4 model = glm::rotate(glm::mat4{ 1.0f }, glm::radians(++_frameNumber * 0.4f), glm::vec3(0, 1, 0));
 
 	//calculate final mesh matrix
-	glm::mat4 mesh_matrix = projection * view * model;
+	glm::mat4 camMatrix = projection * view;
 
 	MeshPushConstants constants;
-	constants.renderMatrix = mesh_matrix;
+	constants.renderMatrix = camMatrix;
 
 	//upload the matrix to the GPU via push constants
 	_graphicsCommandBuffer.pushConstants(_meshPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(MeshPushConstants), &constants);

@@ -1,15 +1,18 @@
 #include "LullabyPch.h"
 #include "WorldManager.h"
 
+#include "Lullaby/ECS/Components/Transform.h"
+
 namespace Lullaby {
 	WorldManager::WorldManager() {
 		_worlds.emplace_back();
 		_currentWorld = 0;
 	}
 
-
 	flecs::entity WorldManager::createEntity() const {
-		return _worlds[_currentWorld].entity();
+		auto entity = _worlds[_currentWorld].entity();
+		entity.add<Transform>();
+		return entity;
 	}
 
 	flecs::world& WorldManager::getWorld() {
