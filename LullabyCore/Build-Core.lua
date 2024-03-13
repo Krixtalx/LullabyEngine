@@ -3,7 +3,7 @@ project "LullabyCore"
    language "C++"
    cppdialect "C++20"
    targetdir "Binaries/%{cfg.buildcfg}"
-   staticruntime "Off"
+   staticruntime "On"
 
    pchheader "LullabyPch.h"
    pchsource ("Source/LullabyPch.cpp")
@@ -28,7 +28,7 @@ project "LullabyCore"
 
    links{
         "vulkan-1",
-        "glfw3"
+        "glfw3_mt"
    }
 
    defines

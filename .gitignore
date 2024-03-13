@@ -62,3 +62,4 @@ Binaries/*
 *.vcxproj
 *.filters
 *.sln
+*.DotSettings

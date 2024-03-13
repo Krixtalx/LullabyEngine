@@ -3,7 +3,7 @@ project "LullabyEditor"
    language "C++"
    cppdialect "C++20"
    targetdir "Binaries/%{cfg.buildcfg}"
-   staticruntime "Off"
+   staticruntime "On"
 
    files { "Source/**.h", "Source/**.cpp", "Source/**.rc" }
 
@@ -39,7 +39,6 @@ project "LullabyEditor"
 
    filter "configurations:Release"
        defines { "RELEASE" }
-       runtime "Release"
        optimize "On"
        symbols "On"
 

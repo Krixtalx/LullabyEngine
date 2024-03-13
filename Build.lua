@@ -7,7 +7,7 @@ local function premakeVersionComment(prj)
 end
 
 local function vcpkg(prj)
-    premake.w('<VcpkgTriplet>x64-windows</VcpkgTriplet>')
+    premake.w('<VcpkgTriplet>x64-windows-static</VcpkgTriplet>')
     premake.w('<VcpkgEnabled>true</VcpkgEnabled>')
     premake.w('<VcpkgEnableManifest>true</VcpkgEnableManifest>')
 end

@@ -2,13 +2,14 @@
   "dependencies": [
     "spdlog",
     "flecs",
-    "stb", 
+    "stb",
     {
-      "name": "imgui", 
+      "name": "imgui",
       "features": [
         "docking-experimental",
         "vulkan-binding"
       ]
-    }
+    },
+    "eastl"
   ]
 }
