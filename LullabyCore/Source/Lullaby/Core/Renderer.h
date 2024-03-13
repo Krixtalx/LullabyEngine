@@ -9,7 +9,7 @@
 
 struct MeshPushConstants {
 	vec4 data;
-	mat4 renderMatrix;
+	mat4x4 renderMatrix;
 };
 
 namespace Lullaby {

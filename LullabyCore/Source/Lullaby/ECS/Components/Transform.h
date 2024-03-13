@@ -10,7 +10,7 @@ namespace Lullaby {
 		void move(vec3 movement);
 		void rotate(float angle, vec3 axis);
 		void rescale(vec3 newScale);
-		mat4 getMatrix() const;
+		mat4x4 getMatrix() const;
 	};
 
 	inline void Transform::move(const vec3 movement) {
@@ -25,7 +25,7 @@ namespace Lullaby {
 		scale = newScale;
 	}
 
-	inline mat4 Transform::getMatrix() const {
-		return glm::translate(mat4(1.0f), position) * glm::toMat4(rotation) * glm::scale(mat4(1.0f), scale);
+	inline mat4x4 Transform::getMatrix() const {
+		return glm::translate(mat4x4(1.0f), position) * glm::toMat4(rotation) * glm::scale(mat4x4(1.0f), scale);
 	}
 }

@@ -33,9 +33,9 @@ namespace Lullaby {
 
 		Camera& operator=(const Camera& camera) = delete;
 
-		mat4 getViewMatrix() const { return _properties._viewMatrix; }
-		mat4 getProjectionMatrix() const { return _properties._projectionMatrix; }
-		mat4 getViewProjectionMatrix() const { return _properties._viewProjectionMatrix; }
+		mat4x4 getViewMatrix() const { return _properties._viewMatrix; }
+		mat4x4 getProjectionMatrix() const { return _properties._projectionMatrix; }
+		mat4x4 getViewProjectionMatrix() const { return _properties._viewProjectionMatrix; }
 		vec3 getCameraPosition() const { return _properties._eye; }
 		//Model3D* getTrackedModel() const;
 

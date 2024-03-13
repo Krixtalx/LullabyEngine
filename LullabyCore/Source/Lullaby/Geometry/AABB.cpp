@@ -13,7 +13,7 @@ AABB::~AABB() = default;
 
 AABB& AABB::operator=(const AABB& aabb) = default;
 
-AABB AABB::dot(const mat4& matrix) const {
+AABB AABB::dot(const mat4x4& matrix) const {
 	return { matrix * vec4(_min, 1.0f), matrix * vec4(_max, 1.0f) };
 }
 

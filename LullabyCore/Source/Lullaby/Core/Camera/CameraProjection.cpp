@@ -80,7 +80,7 @@ float Lullaby::CameraProjection::CameraProperties::getDistToLookAt() {
 
 // Projection
 
-mat4 Lullaby::PerspectiveProjection::buildProjectionMatrix(CameraProperties* camera) {
+mat4x4 Lullaby::PerspectiveProjection::buildProjectionMatrix(CameraProperties* camera) {
 	return glm::perspective(camera->_fovY, camera->_aspect, camera->_zNear, camera->_zFar);
 }
 
@@ -92,7 +92,7 @@ void Lullaby::PerspectiveProjection::zoom(CameraProperties* camera, const float 
 	}
 }
 
-mat4 Lullaby::OrthographicProjection::buildProjectionMatrix(CameraProperties* camera) {
+mat4x4 Lullaby::OrthographicProjection::buildProjectionMatrix(CameraProperties* camera) {
 	const glm::vec2 bottomLeftCorner = camera->_bottomLeftCorner;
 	return glm::ortho(bottomLeftCorner.x, -bottomLeftCorner.x, bottomLeftCorner.y, -bottomLeftCorner.y, camera->_zNear, camera->_zFar);
 }

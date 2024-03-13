@@ -11,7 +11,7 @@ public:
 	AABB& operator=(const AABB& aabb);
 
 	vec3 center() const { return (_max + _min) / 2.0f; }
-	AABB dot(const mat4& matrix) const;
+	AABB dot(const mat4x4& matrix) const;
 	vec3 extent() const { return _max - center(); }
 	vec3 max() const { return _max; }
 	vec3 min() const { return _min; }

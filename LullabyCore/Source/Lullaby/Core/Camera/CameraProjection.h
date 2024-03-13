@@ -21,7 +21,7 @@ namespace Lullaby {
 			vec2							_bottomLeftCorner;
 			uint16_t						_width, _height;
 			vec3							_n, _u, _v;
-			mat4							_viewMatrix, _projectionMatrix, _viewProjectionMatrix;
+			mat4x4							_viewMatrix, _projectionMatrix, _viewProjectionMatrix;
 
 			float	computeAspect() const;
 			void	computeAxes(vec3& n, vec3& u, vec3& v) const;
@@ -40,19 +40,19 @@ namespace Lullaby {
 		};
 
 	public:
-		virtual mat4 buildProjectionMatrix(CameraProperties* camera) = 0;
+		virtual mat4x4 buildProjectionMatrix(CameraProperties* camera) = 0;
 		virtual void zoom(CameraProperties* camera, float speed) = 0;
 	};
 
 	class PerspectiveProjection : public CameraProjection {
 	public:
-		virtual mat4 buildProjectionMatrix(CameraProperties* camera) override;
+		virtual mat4x4 buildProjectionMatrix(CameraProperties* camera) override;
 		virtual void zoom(CameraProperties* camera, float speed) override;
 	};
 
 	class OrthographicProjection : public CameraProjection {
 	public:
-		virtual mat4 buildProjectionMatrix(CameraProperties* camera) override;
+		virtual mat4x4 buildProjectionMatrix(CameraProperties* camera) override;
 		virtual void zoom(CameraProperties* camera, float speed) override;
 	};
 }
